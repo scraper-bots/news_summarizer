@@ -2,8 +2,10 @@
 
 .box {
   background-color: blue;
+  
   padding: 10px;
 }
+
 
 p {
   color: yellow;
@@ -11,9 +13,17 @@ p {
   padding: 0;
 }
 
-.box{
-border: 10px;
-border-color: purple;
 
 
+body{
+  border: 10px solid purple;
+}
+
+.white-text{
+  background-color: red;
+
+}
+
+.outer-box {
+  padding: 10px;
 }
