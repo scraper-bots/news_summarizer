@@ -7,14 +7,43 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sono:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    body {
+    {% comment %} body {
       font-family: 'Sono', sans-serif;
     }
 
     /* Hint: What can you do with a media query and flexbox? */
     @media (max-width: 1250px) {
       
-    }
+    } {% endcomment %}
+
+    body {
+  font-family: 'Sono', sans-serif;
+}
+
+.pricing-container {
+  display: flex;
+  justify-content: space-around;
+}
+
+.pricing-plan {
+  text-align: center;
+  width: 30%; /* Adjust the width based on your preference */
+  padding: 20px;
+  border: 1px solid #ccc; /* Add a border for clarity */
+  margin: 10px;
+}
+
+@media (max-width: 1250px) {
+  .pricing-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .pricing-plan {
+    width: 80%; /* Adjust the width for smaller screens */
+  }
+}
+
   </style>
 </head>
 
