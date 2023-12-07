@@ -31,3 +31,7 @@
 .company-logo {
   margin-right: 10px;
 }
+
+#footer {
+  border-top: none;
+}
