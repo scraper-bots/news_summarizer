@@ -28,7 +28,13 @@ playSound(name_of_sound){
 }
 
 flash(name_of_color){
- gamePattern.push(name_of_color);
+  gamePattern.push(name_of_color);
   $("#" + name_of_color).fadeIn(100).fadeOut(100).fadeIn(100);
 }
 
+function animatePress(currentColour) {
+  $(`#${currentColour}`).addClass('pressed');
+  setTimeout(() => {
+    $(`#${currentColour}`).removeClass('pressed');
+  }, 100);
+}
