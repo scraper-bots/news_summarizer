@@ -33,8 +33,8 @@ flash(name_of_color){
 }
 
 function animatePress(currentColour) {
-  $(`#${currentColour}`).addClass('pressed');
+  $("#"+currentColour).addClass('pressed');
   setTimeout(() => {
-    $(`#${currentColour}`).removeClass('pressed');
+    $("#"+currentColour).removeClass('pressed');
   }, 100);
 }
