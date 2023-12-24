@@ -44,6 +44,8 @@ function userChoice() {
   userClickedPattern.push(userChosenColour);
   playSound(userChosenColour);
   animatePress(userChosenColour);
+  checkAnswer(userClickedPattern.length - 1);
+
 }
 
 function clickDetector() {
@@ -51,5 +53,19 @@ function clickDetector() {
     $("#level-title").text("Level " + level);
     nextSequence();
     gameStarted = true;
+  }
+}
+
+function checkAnswer(currentLevel) {
+  if (userClickedPattern[currentLevel] === gamePattern[currentLevel]) {
+    console.log("Success"); 
+    if (userClickedPattern.length === gamePattern.length) {
+      setTimeout(function () {
+        nextSequence();
+        userClickedPattern = []; 
+      }, 1000);
+    }
+  } else {
+    console.log("Wrong"); 
   }
 }
