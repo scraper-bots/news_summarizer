@@ -204,6 +204,9 @@ def main():
         telegram.send_error_alert(error_msg)
         return
 
+    session_summary = None
+    end_time = None
+
     try:
         # Scrape Banker.az - 2 pages, all articles
         banker_stats = scrape_banker_az(db, summarizer, num_pages=2, limit_per_page=999)
@@ -218,22 +221,6 @@ def main():
         # Add more scrapers here as you build them
         # scrape_other_source(db, summarizer, num_pages=2, limit_per_page=10)
 
-    except KeyboardInterrupt:
-        print("\n\n[INFO] Scraping interrupted by user")
-        errors.append("Scraping interrupted by user")
-
-    except Exception as e:
-        error_msg = f"Unexpected error: {str(e)}"
-        print(f"\n[ERROR] {error_msg}")
-        errors.append(error_msg)
-        telegram.send_error_alert(error_msg)
-        import traceback
-        traceback.print_exc()
-
-    finally:
-        # Close database connection
-        db.close()
-
         end_time = datetime.now(timezone.utc)
 
         print("\n" + "=" * 60)
@@ -247,12 +234,11 @@ def main():
         total_skipped = sum(s['skipped'] for s in sources_stats)
 
         # Create comprehensive session summary if there are new articles
-        session_summary = None
         if all_new_articles:
             print(f"\n[INFO] Creating comprehensive summary for {len(all_new_articles)} new articles...")
             session_summary = summarizer.create_session_summary(all_new_articles, sources_stats)
 
-            # Save session summary to database
+            # Save session summary to database (BEFORE closing connection)
             if session_summary:
                 duration = (end_time - start_time).total_seconds()
                 summary_data = {
@@ -263,6 +249,34 @@ def main():
                     'scraping_duration_seconds': duration
                 }
                 db.insert_scraping_summary(summary_data)
+
+    except KeyboardInterrupt:
+        print("\n\n[INFO] Scraping interrupted by user")
+        errors.append("Scraping interrupted by user")
+        end_time = datetime.now(timezone.utc)
+
+    except Exception as e:
+        error_msg = f"Unexpected error: {str(e)}"
+        print(f"\n[ERROR] {error_msg}")
+        errors.append(error_msg)
+        telegram.send_error_alert(error_msg)
+        import traceback
+        traceback.print_exc()
+        end_time = datetime.now(timezone.utc)
+
+    finally:
+        # Close database connection
+        db.close()
+
+        # Ensure end_time is set
+        if end_time is None:
+            end_time = datetime.now(timezone.utc)
+
+        # Calculate totals (even if scraping failed)
+        total_found = sum(s['total'] for s in sources_stats) if sources_stats else 0
+        total_scraped = sum(s['scraped'] for s in sources_stats) if sources_stats else 0
+        total_saved = sum(s['saved'] for s in sources_stats) if sources_stats else 0
+        total_skipped = sum(s['skipped'] for s in sources_stats) if sources_stats else 0
 
         # Send Telegram report
         report_stats = {

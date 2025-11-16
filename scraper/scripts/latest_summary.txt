@@ -1,0 +1,74 @@
+LATEST SCRAPING SESSION SUMMARY
+================================================================================
+
+Date: 2025-11-16
+Total articles found: 82
+New articles saved: 56
+Sources scraped: 2
+Duration: 106.12 seconds
+Created at: 2025-11-16 14:13:52.160656
+
+================================================================================
+AI-GENERATED SUMMARY:
+================================================================================
+
+## Xəbər Toplama Sessiyasının Ətraflı İcmalı (Banker.az və Marja.az)
+
+Bu icmalda, Banker.az və Marja.az mənbələrindən əldə edilmiş cəmi 56 yeni xəbər təhlil olunur. Xəbərlər əsasən Azərbaycanın daxili maliyyə bazarı, regional siyasət və makroiqtisadi vəziyyətlə yanaşı, qlobal geosiyasi və texnoloji yenilikləri əhatə edir. Marja.az-ın fokuslandığı bank sektoru göstəriciləri isə icmalın əsas ağırlıq mərkəzini təşkil edir.
+
+---
+
+### I. Maliyyə və Bank Sektoru (Ağır Mərkəz)
+
+Marja.az mənbəyindən əldə edilən xəbərlər bank sektorunun 2025-ci ilin 9 ayı üzrə detallı maliyyə nəticələrini və strateji inkişaf addımlarını əks etdirir. Azərbaycan bankları həm daxili, həm də beynəlxalq əməliyyatlarda aktivlik nümayiş etdiriblər.
+
+*   **Beynəlxalq Kapital Cəlbi və Naliyyətlər:** Ölkənin iki böyük maliyyə institutu beynəlxalq maliyyə bazarında uğur qazanıb: **Kapital Bank** öz tarixində ilk sindikatlaşdırılmış kredit sazişini imzalayaraq "Mashreq Bank"dan 50 milyon dollar, **AccessBank** isə Niderland İnkişafı Bankından (FMO) 25 milyon dollar kredit cəlb edib.
+*   **Maliyyə Liderləri və Göstəricilər:** ABB, Kapital Bank və PAŞA Bank əməliyyat gəlirləri (Kapital Bank 1.3 milyard manatdan çox), faiz gəlirləri və əməliyyat mənfəəti üzrə lider olaraq qalır. Beş bankın (ABB, Kapital, PAŞA, Xalq, Bank Respublika) 9 aylıq əməliyyat mənfəəti 58 milyon manatdan çox təşkil edib.
+*   **Regional Genişlənmə və Kapital Gücləndirilməsi:** **Rabitəbank** Qarabağda (Xankəndi) ilk filialını və Naxçıvanda yeni konsepsiyalı filialını açaraq regional inkişafa töhfə verib. **Azər Türk Bank**ın nizamnamə kapitalı isə 21,5 milyon manat artırılaraq 100,5 milyon manata çatdırılıb.
+*   **Tənzimləmə və Nəzarət:** Mərkəzi Bank "İnci Kredo Kredit İttifaqı"nın lisenziyasını ləğv edib və "Monetri" BOKT-nu cinayət yolu ilə əldə edilmiş əmlakın leqallaşdırılmasına nəzarət qaydalarının pozulmasına görə cərimələyib.
+*   **İpoteka və Texnoloji Yeniliklər:** Ölkədə ipoteka kreditlərinin təxminən **80%-nin dövlət hesabına** (İKZF vasitəsilə) həyata keçirildiyi vurğulanıb. Eyni zamanda, AFB Bank İnternet Bankçılıq platformasını yeniləyib, Yapı Kredi Bank Azərbaycan isə Çin yuanı valyutası ilə birbaşa köçürmə imkanı yaradıb.
+
+### II. Azərbaycanın Xarici Siyasəti və Regional Əlaqələr
+
+Xəbərlərin bu bloku Azərbaycanın beynəlxalq müstəvidə fəallaşmasını, xüsusilə Mərkəzi Asiya regionu ilə əlaqələrin dərinləşməsini və Zəngəzur dəhlizi layihəsindəki irəliləyişi əhatə edir.
+
+*   **Mərkəzi Asiya Formatı:** Azərbaycan Daşkənddə keçirilən Mərkəzi Asiya Dövlət Başçılarının 7-ci Məşvərət Görüşünə tamhüquqlu üzv qəbul edilib. Özbəkistan Prezidenti Şavkat Mirziyoyev bununla Mərkəzi Asiya ilə Cənubi Qafqaz arasında güclü bir körpü qurulacağını qeyd edib.
+*   **Zəngəzur Dəhlizi:** Prezident İlham Əliyev çıxışında Azərbaycanda Zəngəzur dəhlizinin tikintisinin başa çatmaq üzrə olduğunu bildirib.
+*   **Münaqişə Keçmişdə Qaldı:** Prezidentin köməkçisi Hikmət Hacıyev Daşkənddə artıq Ermənistan-Azərbaycan münaqişəsinin keçmişdə qaldığını bəyan edib.
+*   **Ukrayna ilə Enerji Əməkdaşlığı:** Ukrayna Prezidenti V. Zelenski qış tədarükünü təmin etmək üçün Azərbaycanla təbii qaz idxalı üzrə fəal iş aparıldığını və uzunmüddətli müqavilələrə ümid etdiklərini yazıb.
+
+### III. Makroiqtisadiyyat, Enerji və Daxili Bazar
+
+Bu hissə Azərbaycanın makroiqtisadi göstəricilərini, enerji sektorundakı irəliləyişləri və daxili bazarda müşahidə edilən qiymət dəyişikliklərini əhatə edir.
+
+*   **Enerji Sektorunda Uğur:** SOCAR “S&P Global Ratings” tərəfindən verilən “BB” uzunmüddətli emitent reytinqini əldə edib ki, bu da son səkkiz ilin ən yüksək qiymətləndirməsidir.
+*   **İnflyasiya Hədəfi:** İllik inflyasiya (5,9 faiz) Mərkəzi Bankın hədəf çərçivəsinin yuxarı həddinə çatıb, qida məhsulları üzrə bahalaşma daha kəskin olub (8,2 faiz).
+*   **Sosial və Büdcə Addımları:** Hesablama Palatasının rəyinə əsasən, 2026-cı ildə işsizliyə görə sığorta ödənişi artırılacaq (28 milyon manat).
+*   **Daxili Bazar Bahalaşması:** Daşınmaz əmlak bazarında qiymət artımı tendensiyası davam edir. Eyni zamanda, dabaq xəstəliyinin ətə tələbatı azaltması fonunda balıq bazarında canlanma və qiymət artımı qeydə alınıb.
+*   **Avtomobil Vergi Siyasəti:** Nəqliyyat eksperti gələn il yanvarın 1-dən elektrik mühərrikli avtomobillərə tətbiq edilən ƏDV güzəştinin başa çatacağını, bunun da qiymətlərin 20 faiz bahalaşmasına səbəb olacağını bildirib.
+
+### IV. Beynəlxalq Münasibətlər və Geosiyasət
+
+Qlobal miqyasda ABŞ, Rusiya, Çin və Venesuelanı əhatə edən bir sıra mühüm siyasi və hərbi hadisələr qeydə alınıb.
+
+*   **Böyük Güc Siyasəti:** Rusiya və ABŞ arasında Budapeştdə keçirilməsi planlaşdırılan Putin-Tramp sammiti təxirə salınıb.
+*   **Ukraynanın Müdafiəsi:** Ukrayna Fransa ilə döyüş aviasiyası və hava hücumundan müdafiəni gücləndirəcək tarixi saziş hazırlayıb.
+*   **Asiya Gərginliyi:** Çin sahil mühafizə gəmiləri Yaponiyanın Şərqi Çin dənizində nəzarət etdiyi ərazi sularına daxil olub.
+*   **Neft Diplomatiyası:** İddialara görə, Venesuela Prezidenti Nikolas Maduro ölkənin neft yataqlarının bir hissəsi üzərində nəzarəti ABŞ-yə vermək təklifini irəli sürüb.
+
+### V. İnfrastruktur, Texnologiya və Ətraf Mühit
+
+Bu bölmə yeni texnologiyalar, nəhəng tikinti layihələri və ekoloji problemləri özündə birləşdirir.
+
+*   **Aviasiya və İT:** AZAL Heydər Əliyev Beynəlxalq Aeroportunda İKT həlləri tətbiq edərək "ağıllı hava limanı" (smart airport) qurmağı planlaşdırır.
+*   **Qlobal İnşaat Rekordları:** Dünyanın ən hündür hoteli – “Ciel Dubai Marina” (377 metr) Dubayda ilk qonaqlarını qəbul edib.
+*   **Texnoloji Yeniliklər:** Çin "Dongfeng" şirkəti hər təkərinə ayrı mühərrik qoşulan yeni elektrikli avtomobil versiyasını sertifikatlaşdırıb. "Telegram" isə platformada hədiyyələr üçün hərrac keçirilməsi funksiyasını işə salıb.
+*   **Ekoloji Narahatlıqlar:** Xəzər dənizinin səviyyəsi Qazaxıstan sahillərində son 18 ildə 36 min km² kiçilərək ən aşağı göstəricilərdən birinə düşüb.
+
+---
+
+### Yekunlaşdırma
+
+Xəbər toplama sessiyası Azərbaycanın maliyyə sektorundakı detallı fəaliyyəti (əsasən Marja.az tərəfindən təqdim olunan hesabatlar), regional siyasət (Mərkəzi Asiya formatına qoşulma) və infrastruktur layihələri (Zəngəzur və "Ağıllı Hava Limanı") üzərində cəmləşib. Makroiqtisadi səviyyədə inflyasiya hədəfləri və SOCAR-ın yüksək reytinqi müsbət dinamikanı göstərir, lakin daxili bazarda qiymət artımları əsas mövzulardan biri olaraq qalır. Qlobal səviyyədə isə geosiyasi gərginliklər (Rusiya-ABŞ, Çin-Yaponiya) və Ukraynanın müdafiə və enerji təminatı ilə bağlı sazişləri önə çıxıb.
+
+================================================================================
