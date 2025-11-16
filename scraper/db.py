@@ -56,11 +56,12 @@ class Database:
         """
         try:
             query = sql.SQL("""
-                INSERT INTO news.articles (title, content, source, url, published_date, language)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO news.articles (title, content, summary, source, url, published_date, language)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (url) DO UPDATE
                 SET title = EXCLUDED.title,
                     content = EXCLUDED.content,
+                    summary = EXCLUDED.summary,
                     published_date = EXCLUDED.published_date,
                     updated_at = CURRENT_TIMESTAMP
                 RETURNING id
@@ -69,6 +70,7 @@ class Database:
             self.cursor.execute(query, (
                 article.get('title'),
                 article.get('content'),
+                article.get('summary'),
                 article.get('source'),
                 article.get('url'),
                 article.get('published_date'),
