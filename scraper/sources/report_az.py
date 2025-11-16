@@ -17,9 +17,10 @@ class ReportAzScraper(BaseScraper):
     """Scraper for Report.az economy news"""
 
     def __init__(self):
-        super().__init__()
-        self.source_name = "Report.az"
-        self.base_url = "https://report.az"
+        super().__init__(
+            source_name="Report.az",
+            base_url="https://report.az"
+        )
         self.category_url = f"{self.base_url}/iqtisadiyyat-xeberleri"
 
     def scrape_article_list(self, page: int = 1) -> List[str]:
@@ -34,11 +35,9 @@ class ReportAzScraper(BaseScraper):
         """
         try:
             # Note: Report.az loads additional pages via AJAX, but we'll scrape the initial page
-            response = self.fetch_page(self.category_url)
-            if not response:
+            soup = self.fetch_page(self.category_url)
+            if not soup:
                 return []
-
-            soup = BeautifulSoup(response.text, 'lxml')
 
             # Find all article blocks
             article_blocks = soup.find_all('div', class_='index-post-block')
@@ -72,11 +71,9 @@ class ReportAzScraper(BaseScraper):
             Dictionary with article data or None if failed
         """
         try:
-            response = self.fetch_page(url)
-            if not response:
+            soup = self.fetch_page(url)
+            if not soup:
                 return None
-
-            soup = BeautifulSoup(response.text, 'lxml')
 
             # Extract title
             title_elem = soup.find('h1', class_='section-title')
