@@ -83,9 +83,10 @@ class TelegramReporter:
                 - start_time: datetime
                 - end_time: datetime
                 - sources: List of source stats
-                - total_scraped: int
-                - total_saved: int
-                - total_skipped: int
+                - total_found: int (total articles found across all sources)
+                - total_scraped: int (successfully scraped, excluding duplicates)
+                - total_saved: int (saved to database)
+                - total_skipped: int (duplicates skipped)
                 - errors: List of errors (optional)
 
         Returns:
@@ -112,7 +113,7 @@ class TelegramReporter:
                 f"{success_emoji} <b>Summary</b>",
                 f"🕐 Duration: {duration_str}",
                 f"📊 Sources scraped: {len(stats['sources'])}",
-                f"📝 Total articles found: {stats['total_scraped']}",
+                f"📝 Total articles found: {stats['total_found']}",
                 f"💾 New articles saved: {stats['total_saved']}",
                 f"⏭ Duplicates skipped: {stats['total_skipped']}",
                 ""

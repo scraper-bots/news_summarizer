@@ -228,6 +228,7 @@ def main():
         print("=" * 60)
 
         # Calculate totals
+        total_found = sum(s['total'] for s in sources_stats)
         total_scraped = sum(s['scraped'] for s in sources_stats)
         total_saved = sum(s['saved'] for s in sources_stats)
         total_skipped = sum(s['skipped'] for s in sources_stats)
@@ -237,6 +238,7 @@ def main():
             'start_time': start_time,
             'end_time': end_time,
             'sources': sources_stats,
+            'total_found': total_found,
             'total_scraped': total_scraped,
             'total_saved': total_saved,
             'total_skipped': total_skipped,
