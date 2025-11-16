@@ -40,6 +40,14 @@ This folder contains one-time and debugging scripts for the news scraper project
   python scraper/scripts/test_banker_az.py
   ```
 
+- **test_marja_az.py** - Test Marja.az scraper
+  - Tests article list scraping
+  - Tests single article scraping
+  - Verifies Azerbaijani character handling
+  ```bash
+  python scraper/scripts/test_marja_az.py
+  ```
+
 ## Usage
 
 All scripts should be run from the project root directory:
