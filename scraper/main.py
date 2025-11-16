@@ -5,7 +5,7 @@ Runs all news source scrapers and saves articles to database
 
 import sys
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict
 
 # Add parent directory to path
@@ -197,7 +197,7 @@ def main():
     summarizer = GeminiSummarizer()
 
     # Track overall statistics
-    start_time = datetime.now(datetime.UTC)
+    start_time = datetime.now(timezone.utc)
     sources_stats = []
     all_new_articles = []
     errors = []
@@ -244,7 +244,7 @@ def main():
         # Close database connection
         db.close()
 
-        end_time = datetime.now(datetime.UTC)
+        end_time = datetime.now(timezone.utc)
 
         print("\n" + "=" * 60)
         print("NEWS SCRAPER COMPLETED")
