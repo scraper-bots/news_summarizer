@@ -18,13 +18,14 @@ from telegram import TelegramReporter
 from summarizer import GeminiSummarizer
 
 
-def scrape_banker_az(db: Database, summarizer: GeminiSummarizer, num_pages: int = 2, limit_per_page: int = 10) -> Dict:
+def scrape_banker_az(db: Database, summarizer: GeminiSummarizer, scraping_session_id: int, num_pages: int = 2, limit_per_page: int = 10) -> Dict:
     """
     Scrape articles from Banker.az
 
     Args:
         db: Database instance
         summarizer: GeminiSummarizer instance
+        scraping_session_id: ID of the current scraping session
         num_pages: Number of pages to scrape
         limit_per_page: Maximum articles per page
 
@@ -74,7 +75,7 @@ def scrape_banker_az(db: Database, summarizer: GeminiSummarizer, num_pages: int 
                 total_scraped += 1
 
                 # Save to database (no individual summarization)
-                article_id = db.insert_article(article)
+                article_id = db.insert_article(article, scraping_session_id)
                 if article_id:
                     total_saved += 1
                     new_articles.append(article)
@@ -97,13 +98,14 @@ def scrape_banker_az(db: Database, summarizer: GeminiSummarizer, num_pages: int 
     }
 
 
-def scrape_marja_az(db: Database, summarizer: GeminiSummarizer, num_pages: int = 2, limit_per_page: int = 10) -> Dict:
+def scrape_marja_az(db: Database, summarizer: GeminiSummarizer, scraping_session_id: int, num_pages: int = 2, limit_per_page: int = 10) -> Dict:
     """
     Scrape articles from Marja.az
 
     Args:
         db: Database instance
         summarizer: GeminiSummarizer instance
+        scraping_session_id: ID of the current scraping session
         num_pages: Number of pages to scrape
         limit_per_page: Maximum articles per page
 
@@ -153,7 +155,7 @@ def scrape_marja_az(db: Database, summarizer: GeminiSummarizer, num_pages: int =
                 total_scraped += 1
 
                 # Save to database (no individual summarization)
-                article_id = db.insert_article(article)
+                article_id = db.insert_article(article, scraping_session_id)
                 if article_id:
                     total_saved += 1
                     new_articles.append(article)
@@ -206,15 +208,32 @@ def main():
 
     session_summary = None
     end_time = None
+    scraping_session_id = None
 
     try:
+        # Create scraping session record FIRST (placeholder)
+        print("\n[INFO] Creating scraping session...")
+        placeholder_summary = {
+            'summary': 'Scraping in progress...',
+            'articles_count': 0,
+            'sources_count': 2,
+            'new_articles_count': 0,
+            'scraping_duration_seconds': 0
+        }
+        scraping_session_id = db.insert_scraping_summary(placeholder_summary)
+
+        if scraping_session_id:
+            print(f"[SUCCESS] Created scraping session (ID: {scraping_session_id})")
+        else:
+            print("[ERROR] Failed to create scraping session, articles won't be linked")
+
         # Scrape Banker.az - 2 pages, all articles
-        banker_stats = scrape_banker_az(db, summarizer, num_pages=2, limit_per_page=999)
+        banker_stats = scrape_banker_az(db, summarizer, scraping_session_id, num_pages=2, limit_per_page=999)
         sources_stats.append(banker_stats)
         all_new_articles.extend(banker_stats.get('new_articles', []))
 
         # Scrape Marja.az - 2 pages, all articles
-        marja_stats = scrape_marja_az(db, summarizer, num_pages=2, limit_per_page=999)
+        marja_stats = scrape_marja_az(db, summarizer, scraping_session_id, num_pages=2, limit_per_page=999)
         sources_stats.append(marja_stats)
         all_new_articles.extend(marja_stats.get('new_articles', []))
 
@@ -234,21 +253,31 @@ def main():
         total_skipped = sum(s['skipped'] for s in sources_stats)
 
         # Create comprehensive session summary if there are new articles
-        if all_new_articles:
+        if all_new_articles and scraping_session_id:
             print(f"\n[INFO] Creating comprehensive summary for {len(all_new_articles)} new articles...")
             session_summary = summarizer.create_session_summary(all_new_articles, sources_stats)
 
-            # Save session summary to database (BEFORE closing connection)
+            # Update session summary in database (BEFORE closing connection)
             if session_summary:
                 duration = (end_time - start_time).total_seconds()
                 summary_data = {
                     'summary': session_summary,
                     'articles_count': total_found,
-                    'sources_count': len(sources_stats),
                     'new_articles_count': total_saved,
                     'scraping_duration_seconds': duration
                 }
-                db.insert_scraping_summary(summary_data)
+                db.update_scraping_summary(scraping_session_id, summary_data)
+        elif scraping_session_id and not all_new_articles:
+            # No new articles, update placeholder with zero counts
+            print("\n[INFO] No new articles found, updating session with zero counts...")
+            duration = (end_time - start_time).total_seconds()
+            summary_data = {
+                'summary': 'No new articles found in this scraping session.',
+                'articles_count': total_found,
+                'new_articles_count': 0,
+                'scraping_duration_seconds': duration
+            }
+            db.update_scraping_summary(scraping_session_id, summary_data)
 
     except KeyboardInterrupt:
         print("\n\n[INFO] Scraping interrupted by user")

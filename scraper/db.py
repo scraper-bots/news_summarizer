@@ -44,24 +44,26 @@ class Database:
             self.conn.close()
             print("[SUCCESS] Database connection closed")
 
-    def insert_article(self, article: Dict) -> Optional[int]:
+    def insert_article(self, article: Dict, scraping_session_id: Optional[int] = None) -> Optional[int]:
         """
         Insert a news article into the database
 
         Args:
             article: Dictionary with keys: title, content, source, url, published_date
+            scraping_session_id: Optional ID of the scraping session that collected this article
 
         Returns:
             Article ID if successful, None otherwise
         """
         try:
             query = sql.SQL("""
-                INSERT INTO news.articles (title, content, source, url, published_date, language)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO news.articles (title, content, source, url, published_date, language, scraping_session_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (url) DO UPDATE
                 SET title = EXCLUDED.title,
                     content = EXCLUDED.content,
                     published_date = EXCLUDED.published_date,
+                    scraping_session_id = EXCLUDED.scraping_session_id,
                     updated_at = CURRENT_TIMESTAMP
                 RETURNING id
             """)
@@ -72,7 +74,8 @@ class Database:
                 article.get('source'),
                 article.get('url'),
                 article.get('published_date'),
-                article.get('language', 'az')
+                article.get('language', 'az'),
+                scraping_session_id
             ))
 
             result = self.cursor.fetchone()
@@ -96,19 +99,20 @@ class Database:
             self.conn.rollback()
             return None
 
-    def bulk_insert_articles(self, articles: List[Dict]) -> int:
+    def bulk_insert_articles(self, articles: List[Dict], scraping_session_id: Optional[int] = None) -> int:
         """
         Insert multiple articles in a single transaction
 
         Args:
             articles: List of article dictionaries
+            scraping_session_id: Optional ID of the scraping session
 
         Returns:
             Number of articles successfully inserted
         """
         inserted_count = 0
         for article in articles:
-            if self.insert_article(article):
+            if self.insert_article(article, scraping_session_id):
                 inserted_count += 1
         return inserted_count
 
@@ -165,6 +169,49 @@ class Database:
             print(f"[ERROR] Error inserting scraping summary: {e}")
             self.conn.rollback()
             return None
+
+    def update_scraping_summary(self, summary_id: int, summary_data: Dict) -> bool:
+        """
+        Update an existing scraping session summary
+
+        Args:
+            summary_id: ID of the summary to update
+            summary_data: Dictionary with keys to update:
+                - summary: str (comprehensive summary text)
+                - articles_count: int (total articles found)
+                - new_articles_count: int (new articles saved)
+                - scraping_duration_seconds: float
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            query = sql.SQL("""
+                UPDATE news.scraping_summaries
+                SET summary = %s,
+                    articles_count = %s,
+                    new_articles_count = %s,
+                    scraping_duration_seconds = %s,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s
+            """)
+
+            self.cursor.execute(query, (
+                summary_data.get('summary'),
+                summary_data.get('articles_count'),
+                summary_data.get('new_articles_count'),
+                summary_data.get('scraping_duration_seconds'),
+                summary_id
+            ))
+
+            self.conn.commit()
+            print(f"[SUCCESS] Scraping summary updated (ID: {summary_id})")
+            return True
+
+        except Exception as e:
+            print(f"[ERROR] Error updating scraping summary: {e}")
+            self.conn.rollback()
+            return False
 
     def get_articles_by_source(self, source: str, limit: int = 10) -> List[Dict]:
         """Retrieve articles from a specific source"""
