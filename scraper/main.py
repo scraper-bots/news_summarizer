@@ -15,6 +15,7 @@ from db import Database
 from sources.banker_az import BankerAzScraper
 from sources.marja_az import MarjaAzScraper
 from sources.report_az import ReportAzScraper
+from sources.fed_az import FedAzScraper
 from telegram import TelegramReporter
 from summarizer import GeminiSummarizer
 
@@ -259,6 +260,90 @@ def scrape_report_az(db: Database, summarizer: GeminiSummarizer, scraping_sessio
     }
 
 
+def scrape_fed_az(db: Database, summarizer: GeminiSummarizer, scraping_session_id: int, num_pages: int = 2, limit_per_page: int = 10) -> Dict:
+    """
+    Scrape articles from Fed.az (multiple categories)
+
+    Args:
+        db: Database instance
+        summarizer: GeminiSummarizer instance
+        scraping_session_id: ID of the current scraping session
+        num_pages: Number of pages to scrape per category
+        limit_per_page: Maximum articles per page
+
+    Returns:
+        Dictionary with scraping statistics and new articles
+    """
+    print("\n" + "=" * 60)
+    print("SCRAPING FED.AZ")
+    print("=" * 60)
+
+    scraper = FedAzScraper()
+    total_found = 0
+    total_scraped = 0
+    total_saved = 0
+    total_skipped = 0
+    new_articles = []
+
+    # Scrape all categories
+    for category in scraper.categories:
+        print(f"\n[INFO] Scraping category: {category}")
+
+        for page in range(1, num_pages + 1):
+            print(f"\n[Page {page}] Fetching article list from {category}...")
+
+            # Get article URLs from this page
+            article_urls = scraper.scrape_article_list(page=page, category=category)
+
+            if not article_urls:
+                print(f"[Page {page}] No articles found")
+                break
+
+            # Limit articles per page
+            article_urls = article_urls[:limit_per_page]
+            total_found += len(article_urls)
+            print(f"[Page {page}] Found {len(article_urls)} articles")
+
+            # Scrape each article
+            for i, url in enumerate(article_urls, 1):
+                print(f"\n[{i}/{len(article_urls)}] Scraping: {url}")
+
+                # Check if article already exists
+                if db.article_exists(url):
+                    print(f"[SKIP] Article already exists in database")
+                    total_skipped += 1
+                    continue
+
+                # Scrape article
+                article = scraper.scrape_article(url)
+
+                if article:
+                    total_scraped += 1
+
+                    # Save to database (no individual summarization)
+                    article_id = db.insert_article(article, scraping_session_id)
+                    if article_id:
+                        total_saved += 1
+                        new_articles.append(article)
+
+    print("\n" + "=" * 60)
+    print(f"FED.AZ SUMMARY")
+    print(f"Total found: {total_found}")
+    print(f"Total scraped: {total_scraped}")
+    print(f"Total saved to DB: {total_saved}")
+    print(f"Total skipped: {total_skipped}")
+    print("=" * 60)
+
+    return {
+        'name': 'Fed.az',
+        'total': total_found,
+        'scraped': total_scraped,
+        'saved': total_saved,
+        'skipped': total_skipped,
+        'new_articles': new_articles
+    }
+
+
 def main():
     """Main function to run all scrapers"""
     print("\n" + "=" * 60)
@@ -296,7 +381,7 @@ def main():
         placeholder_summary = {
             'summary': 'Scraping in progress...',
             'articles_count': 0,
-            'sources_count': 3,
+            'sources_count': 4,
             'new_articles_count': 0,
             'scraping_duration_seconds': 0
         }
