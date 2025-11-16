@@ -25,6 +25,7 @@ from sources.report_az import ReportAzScraper
 from sources.fed_az import FedAzScraper
 from sources.sonxeber_az import SonxeberAzScraper
 from sources.iqtisadiyyat_az import IqtisadiyyatAzScraper
+from sources.trend_az import TrendAzScraper
 
 
 def test_scraper(scraper, name, test_category=None):
@@ -119,7 +120,7 @@ def main():
 
     # Test 1: Banker.az
     print("\n\n" + "█" * 70)
-    print("TEST 1/6: BANKER.AZ")
+    print("TEST 1/7: BANKER.AZ")
     print("█" * 70)
     banker_scraper = BankerAzScraper()
     banker_results = test_scraper(banker_scraper, "Banker.az")
@@ -127,7 +128,7 @@ def main():
 
     # Test 2: Marja.az
     print("\n\n" + "█" * 70)
-    print("TEST 2/6: MARJA.AZ")
+    print("TEST 2/7: MARJA.AZ")
     print("█" * 70)
     marja_scraper = MarjaAzScraper()
     marja_results = test_scraper(marja_scraper, "Marja.az")
@@ -135,7 +136,7 @@ def main():
 
     # Test 3: Report.az
     print("\n\n" + "█" * 70)
-    print("TEST 3/6: REPORT.AZ")
+    print("TEST 3/7: REPORT.AZ")
     print("█" * 70)
     report_scraper = ReportAzScraper()
     report_results = test_scraper(report_scraper, "Report.az")
@@ -143,7 +144,7 @@ def main():
 
     # Test 4: Fed.az (test first category)
     print("\n\n" + "█" * 70)
-    print("TEST 4/6: FED.AZ")
+    print("TEST 4/7: FED.AZ")
     print("█" * 70)
     fed_scraper = FedAzScraper()
     fed_results = test_scraper(fed_scraper, "Fed.az", test_category="az/maliyye")
@@ -151,7 +152,7 @@ def main():
 
     # Test 5: Sonxeber.az
     print("\n\n" + "█" * 70)
-    print("TEST 5/6: SONXEBER.AZ")
+    print("TEST 5/7: SONXEBER.AZ")
     print("█" * 70)
     sonxeber_scraper = SonxeberAzScraper()
     sonxeber_results = test_scraper(sonxeber_scraper, "Sonxeber.az")
@@ -159,11 +160,19 @@ def main():
 
     # Test 6: Iqtisadiyyat.az (test first category)
     print("\n\n" + "█" * 70)
-    print("TEST 6/6: IQTISADIYYAT.AZ")
+    print("TEST 6/7: IQTISADIYYAT.AZ")
     print("█" * 70)
     iqtisadiyyat_scraper = IqtisadiyyatAzScraper()
     iqtisadiyyat_results = test_scraper(iqtisadiyyat_scraper, "Iqtisadiyyat.az", test_category="az/category/bank-35")
     all_results.append(iqtisadiyyat_results)
+
+    # Test 7: Trend.az
+    print("\n\n" + "█" * 70)
+    print("TEST 7/7: TREND.AZ")
+    print("█" * 70)
+    trend_scraper = TrendAzScraper()
+    trend_results = test_scraper(trend_scraper, "Trend.az")
+    all_results.append(trend_results)
 
     # Summary
     print("\n\n" + "=" * 70)
