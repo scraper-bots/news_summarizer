@@ -137,11 +137,17 @@ class TelegramReporter:
                     )
                 message_parts.append("")
 
-            # Session summary (if available)
+            # Session summary (if available) - truncate if too long
             if stats.get('session_summary'):
+                summary = stats['session_summary']
+                max_summary_length = 2000  # Leave room for the rest of the message
+
+                if len(summary) > max_summary_length:
+                    summary = summary[:max_summary_length] + "...\n\n[Summary truncated - too long for Telegram]"
+
                 message_parts.extend([
                     "📋 <b>Session Summary</b>",
-                    stats['session_summary'],
+                    summary,
                     ""
                 ])
 
@@ -165,6 +171,13 @@ class TelegramReporter:
             ])
 
             message = "\n".join(message_parts)
+
+            # Telegram has a 4096 character limit - ensure we don't exceed it
+            MAX_TELEGRAM_LENGTH = 4096
+            if len(message) > MAX_TELEGRAM_LENGTH:
+                # Truncate and add warning
+                message = message[:MAX_TELEGRAM_LENGTH - 100] + "\n\n⚠️ [Message truncated - exceeded Telegram length limit]"
+
             return self.send_message(message)
 
         except Exception as e:
