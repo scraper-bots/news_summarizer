@@ -77,37 +77,117 @@ class GeminiSummarizer:
         # Record this request
         self.request_times.append(time.time())
 
+    def filter_relevant_articles(self, articles: List[Dict]) -> List[Dict]:
+        """
+        Filter articles to keep only those relevant to banking/finance sector
+
+        Args:
+            articles: List of all articles
+
+        Returns:
+            List of relevant articles only
+        """
+        if not self.enabled or not articles:
+            return articles
+
+        try:
+            print(f"\n[INFO] Filtering {len(articles)} articles for banking/finance relevance...")
+            self._wait_for_rate_limit()
+
+            # Prepare articles for filtering
+            articles_list = []
+            for i, article in enumerate(articles, 1):
+                content_snippet = article.get('content', '')[:200]
+                articles_list.append(
+                    f"{i}. {article['title']}\n{content_snippet}..."
+                )
+
+            articles_text = "\n\n".join(articles_list)
+
+            # Filtering prompt
+            filter_prompt = f"""Sən bank sektorunda Business Analyst üçün asistansan. Aşağıdakı xəbərləri analiz et və YALNIZ bank sektoruna aid olanları seç.
+
+RELEVANT (UYĞUN) XƏBƏRLƏR:
+- Bank və maliyyə sektoru xəbərləri
+- Makroiqtisadi göstəricilər (inflyasiya, iqtisadi artım, və s.)
+- Tənzimləmə və qanunvericilik dəyişiklikləri
+- Kredit, ipoteka, depozit bazarları
+- Bank kapitalı və maliyyə nəticələri
+- Fintex və rəqəmsal bank xidmətləri
+- Valyuta məzənnəsi və pul siyasəti
+- Beynəlxalq maliyyə təşkilatları (IMF, World Bank, və s.)
+- Biznes mühiti və investisiya iqlimi
+
+IRRELEVANT (UYĞUN OLMAYAN) XƏBƏRLƏR:
+- Beynəlxalq siyasət və münaqişələr (bank sektoruna təsiri yoxdursa)
+- İdman xəbərləri
+- Mədəniyyət və əyləncə
+- Texnologiya (fintex deyilsə)
+- Ümumi infrastruktur layihələri (maliyyələşmə aspekti yoxdursa)
+
+XƏBƏRLƏR:
+{articles_text}
+
+TAPŞıRıQ: Yuxarıdakı xəbərlərdən YALNIZ bank sektoru üçün relevant olanların nömrələrini ver.
+Cavabı bu formatda ver: 1,3,5,7 (vergüllə ayrılmış nömrələr, heç bir izahat yox)
+
+RELEVANT XƏBƏRLƏR:"""
+
+            response = self.model.generate_content(filter_prompt)
+            relevant_indices_str = response.text.strip()
+
+            # Parse indices
+            try:
+                relevant_indices = [int(x.strip()) - 1 for x in relevant_indices_str.split(',') if x.strip().isdigit()]
+                relevant_articles = [articles[i] for i in relevant_indices if 0 <= i < len(articles)]
+
+                print(f"[SUCCESS] Filtered: {len(relevant_articles)}/{len(articles)} articles are banking-relevant")
+                return relevant_articles
+
+            except Exception as parse_error:
+                print(f"[WARNING] Could not parse filter results: {parse_error}")
+                print(f"[INFO] Using all articles as fallback")
+                return articles
+
+        except Exception as e:
+            print(f"[ERROR] Filtering failed: {e}")
+            print(f"[INFO] Using all articles as fallback")
+            return articles
+
     def create_session_summary(self, articles: List[Dict], sources_stats: List[Dict]) -> Optional[str]:
         """
-        Create comprehensive summary of entire scraping session
+        Create banking intelligence summary with actionable insights
 
         Args:
             articles: List of ALL articles (new ones) from this session
             sources_stats: List of stats per source
 
         Returns:
-            Comprehensive summary in Azerbaijani covering all articles
+            Banking intelligence report in Azerbaijani with strategic insights
         """
         if not self.enabled or not articles:
             return None
 
         try:
-            # Wait if needed to respect rate limits
+            # STEP 1: Filter for relevant articles
+            relevant_articles = self.filter_relevant_articles(articles)
+
+            if not relevant_articles:
+                return "Bu sessiyada bank sektoruna aid heç bir xəbər tapılmadı."
+
+            # STEP 2: Create banking intelligence report
             self._wait_for_rate_limit()
 
-            # Prepare article summaries (title + first part of content)
+            # Prepare article summaries
             article_summaries = []
-            for i, article in enumerate(articles, 1):
-                # Limit content to avoid token overflow
-                content_snippet = article.get('content', '')[:300]
+            for i, article in enumerate(relevant_articles, 1):
+                content_snippet = article.get('content', '')[:400]
                 article_summaries.append(
                     f"{i}. [{article['source']}] {article['title']}\n"
                     f"   {content_snippet}..."
                 )
 
-            # Combine all articles (limit total to stay within token limits)
-            # Gemini Flash: ~32K input tokens ≈ 24K words ≈ 120K chars
-            articles_text = "\n\n".join(article_summaries[:50])  # Max 50 articles per summary
+            articles_text = "\n\n".join(article_summaries[:40])
 
             # Create sources overview
             sources_overview = "\n".join([
@@ -115,38 +195,91 @@ class GeminiSummarizer:
                 for s in sources_stats
             ])
 
-            # Create comprehensive prompt
-            prompt = f"""Aşağıdakı xəbər toplama sessiyasından ətraflı icmal hazırla.
+            # Banking intelligence prompt
+            prompt = f"""Sən Azərbaycan bankında Business Analyst üçün strateji məsləhətçisən.
+Aşağıdakı bank sektoruna aid xəbərlərdən ACTIONABLE banking intelligence report hazırla.
 
 MƏNBƏLƏR:
 {sources_overview}
 
-TOPLAM: {len(articles)} yeni xəbər
-
-XƏBƏRLƏR:
+BANK SEKTORUNA AİD XƏBƏRLƏR ({len(relevant_articles)}/{len(articles)}):
 {articles_text}
 
-ÖNEMLİ GÖSTƏRIŞLƏR:
-1. İcmal Azərbaycan dilində olmalıdır
-2. Bütün mühüm xəbərləri əhatə etməlidir
-3. Xəbərləri mövzulara görə qruplaşdır (məsələn: İqtisadiyyat, Siyasət, Maliyyə və s.)
-4. Hər mövzu üzrə 3-5 bullet point ver
-5. Ümumi qısa giriş və yekunlaşdırma əlavə et
+REPORT STRUKTURU:
 
-ƏTRAFL İCMAL:"""
+## 📊 İCMAL ÖZƏTİ
+[2-3 cümlədə əsas trendləri və kritik məqamları qeyd et]
 
-            # Generate comprehensive summary
+## 🏦 BANK SEKTORU ANALİZİ
+
+### Makroiqtisadi Mühit
+- İnflyasiya, faiz dərəcələri, iqtisadi artım
+- Bank sektoruna potensial təsiri
+
+### Tənzimləmə və Qanunvericilik
+- Yeni qanunlar, Mərkəzi Bank qərarları
+- Compliance tələbləri
+
+### Bazar Dinamikası
+- Bank nəticələri, kapital artımı, kredit portfeli
+- Rəqabət mühiti, bazar payı dəyişiklikləri
+
+### Rəqəmsal Transformasiya
+- Fintech, yeni məhsullar, texnologiya təbənniyyatı
+
+### Beynəlxalq Əməkdaşlıq
+- Xarici maliyyələşmə, beynəlxalq təşkilatlarla münasibətlər
+
+## 💡 STRATEJİ RİSKLƏR VƏ İMKANLAR
+
+### Risklər ⚠️
+1. [Risk 1]: Təsvir və potensial təsir
+2. [Risk 2]: Təsvir və potensial təsir
+
+### İmkanlar ✅
+1. [İmkan 1]: Necə istifadə etmək olar
+2. [İmkan 2]: Necə istifadə etmək olar
+
+## 🎯 TÖVSİYƏLƏR VƏ ACTIONABLE INSIGHTS
+
+### Qısa Müddətli (1-3 ay)
+1. [Konkret təklif və addımlar]
+2. [Konkret təklif və addımlar]
+
+### Orta Müddətli (3-6 ay)
+1. [Strateji tövsiyə]
+2. [Strateji tövsiyə]
+
+### İzləməli Məsələlər 👁️
+- [İzləməli trend 1]
+- [İzləməli trend 2]
+
+## 📈 ƏSAS GÖSTƏRİCİLƏR
+[Xəbərlərdən çıxan əsas rəqəmlər və statistika]
+
+ÖNEMLİ:
+- Konkret, actionable olsun
+- Business impact-ə fokuslan
+- Rəqəmləri və faktları istifadə et
+- Azərbaycan dilində professional ton
+- Banking terminologiyasını düzgün işlət
+
+BANKING INTELLIGENCE REPORT:"""
+
+            # Generate banking intelligence
             response = self.model.generate_content(prompt)
             summary = response.text.strip()
 
-            print(f"[SUCCESS] Created session summary for {len(articles)} articles from {len(sources_stats)} sources")
+            print(f"[SUCCESS] Created banking intelligence report from {len(relevant_articles)} relevant articles")
+            print(f"[INFO] Filtered out {len(articles) - len(relevant_articles)} non-banking articles")
+
             return summary
 
         except Exception as e:
             try:
-                print(f"[ERROR] Failed to create session summary: {e}")
+                print(f"[ERROR] Failed to create banking intelligence: {e}")
             except (UnicodeEncodeError, UnicodeDecodeError):
-                print(f"[ERROR] Failed to create session summary (encoding error)")
+                print(f"[ERROR] Failed to create banking intelligence (encoding error)")
             return None
 
     def get_usage_stats(self) -> Dict:

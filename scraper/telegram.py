@@ -32,6 +32,7 @@ class TelegramReporter:
     def send_message(self, message: str) -> bool:
         """
         Send a message to all configured Telegram chats
+        If message exceeds Telegram limit, splits into multiple messages
 
         Args:
             message: Message text (supports HTML formatting)
@@ -42,26 +43,83 @@ class TelegramReporter:
         if not self.enabled:
             return False
 
+        # Split message if too long
+        MAX_TELEGRAM_LENGTH = 4096
+        messages = self._split_message(message, MAX_TELEGRAM_LENGTH)
+
         success_count = 0
         url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage"
 
         for chat_id in self.chat_ids:
             try:
-                payload = {
-                    'chat_id': chat_id,
-                    'text': message,
-                    'parse_mode': 'HTML',
-                    'disable_web_page_preview': True
-                }
+                # Send all message parts
+                for i, msg_part in enumerate(messages, 1):
+                    # Add part indicator if multiple parts
+                    if len(messages) > 1:
+                        part_indicator = f"\n\n<i>[Part {i}/{len(messages)}]</i>"
+                        msg_to_send = msg_part + part_indicator
+                    else:
+                        msg_to_send = msg_part
 
-                response = requests.post(url, json=payload, timeout=10)
-                response.raise_for_status()
+                    payload = {
+                        'chat_id': chat_id,
+                        'text': msg_to_send,
+                        'parse_mode': 'HTML',
+                        'disable_web_page_preview': True
+                    }
+
+                    response = requests.post(url, json=payload, timeout=10)
+                    response.raise_for_status()
+
+                    # Small delay between parts to avoid rate limiting
+                    if i < len(messages):
+                        import time
+                        time.sleep(0.5)
+
                 success_count += 1
 
             except Exception as e:
                 print(f"[ERROR] Failed to send Telegram message to chat {chat_id}: {e}")
 
         return success_count > 0
+
+    def _split_message(self, message: str, max_length: int) -> List[str]:
+        """
+        Split a long message into multiple parts
+
+        Args:
+            message: The message to split
+            max_length: Maximum length per part
+
+        Returns:
+            List of message parts
+        """
+        if len(message) <= max_length:
+            return [message]
+
+        parts = []
+        current_part = ""
+
+        # Split by lines to avoid breaking in middle of content
+        lines = message.split('\n')
+
+        for line in lines:
+            # If adding this line would exceed limit, save current part and start new one
+            if len(current_part) + len(line) + 1 > max_length - 100:  # Leave room for part indicator
+                if current_part:
+                    parts.append(current_part)
+                current_part = line
+            else:
+                if current_part:
+                    current_part += '\n' + line
+                else:
+                    current_part = line
+
+        # Add remaining content
+        if current_part:
+            parts.append(current_part)
+
+        return parts
 
     def format_duration(self, seconds: float) -> str:
         """Format duration in human-readable format"""
@@ -137,17 +195,12 @@ class TelegramReporter:
                     )
                 message_parts.append("")
 
-            # Session summary (if available) - truncate if too long
+            # Session summary (if available) - full summary, no truncation
+            # Message will be automatically split if needed
             if stats.get('session_summary'):
-                summary = stats['session_summary']
-                max_summary_length = 2000  # Leave room for the rest of the message
-
-                if len(summary) > max_summary_length:
-                    summary = summary[:max_summary_length] + "...\n\n[Summary truncated - too long for Telegram]"
-
                 message_parts.extend([
-                    "📋 <b>Session Summary</b>",
-                    summary,
+                    "📋 <b>Banking Intelligence Report</b>",
+                    stats['session_summary'],
                     ""
                 ])
 
@@ -172,12 +225,7 @@ class TelegramReporter:
 
             message = "\n".join(message_parts)
 
-            # Telegram has a 4096 character limit - ensure we don't exceed it
-            MAX_TELEGRAM_LENGTH = 4096
-            if len(message) > MAX_TELEGRAM_LENGTH:
-                # Truncate and add warning
-                message = message[:MAX_TELEGRAM_LENGTH - 100] + "\n\n⚠️ [Message truncated - exceeded Telegram length limit]"
-
+            # send_message will automatically split if needed
             return self.send_message(message)
 
         except Exception as e:
