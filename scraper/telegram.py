@@ -137,6 +137,14 @@ class TelegramReporter:
                     )
                 message_parts.append("")
 
+            # Daily digest (if available)
+            if stats.get('daily_digest'):
+                message_parts.extend([
+                    "📋 <b>Daily Digest</b>",
+                    stats['daily_digest'],
+                    ""
+                ])
+
             # Errors (if any)
             if stats.get('errors'):
                 message_parts.extend([
@@ -176,7 +184,7 @@ class TelegramReporter:
         if not self.enabled:
             return False
 
-        timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+        timestamp = datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
         message = (
             "🚨 <b>Scraping Error Alert</b>\n"
             "━━━━━━━━━━━━━━━━━━━━\n\n"
@@ -200,7 +208,7 @@ class TelegramReporter:
         if not self.enabled:
             return False
 
-        timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+        timestamp = datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
         message = (
             "🚀 <b>Scraping Started</b>\n"
             "━━━━━━━━━━━━━━━━━━━━\n\n"

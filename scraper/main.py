@@ -15,19 +15,21 @@ from db import Database
 from sources.banker_az import BankerAzScraper
 from sources.marja_az import MarjaAzScraper
 from telegram import TelegramReporter
+from summarizer import GeminiSummarizer
 
 
-def scrape_banker_az(db: Database, num_pages: int = 2, limit_per_page: int = 10) -> Dict:
+def scrape_banker_az(db: Database, summarizer: GeminiSummarizer, num_pages: int = 2, limit_per_page: int = 10) -> Dict:
     """
     Scrape articles from Banker.az
 
     Args:
         db: Database instance
+        summarizer: GeminiSummarizer instance
         num_pages: Number of pages to scrape
         limit_per_page: Maximum articles per page
 
     Returns:
-        Dictionary with scraping statistics
+        Dictionary with scraping statistics and new articles
     """
     print("\n" + "=" * 60)
     print("SCRAPING BANKER.AZ")
@@ -38,6 +40,7 @@ def scrape_banker_az(db: Database, num_pages: int = 2, limit_per_page: int = 10)
     total_scraped = 0
     total_saved = 0
     total_skipped = 0
+    new_articles = []
 
     for page in range(1, num_pages + 1):
         print(f"\n[Page {page}] Fetching article list...")
@@ -70,10 +73,16 @@ def scrape_banker_az(db: Database, num_pages: int = 2, limit_per_page: int = 10)
             if article:
                 total_scraped += 1
 
+                # Summarize article
+                summary = summarizer.summarize_article(article)
+                if summary:
+                    article['summary'] = summary
+
                 # Save to database
                 article_id = db.insert_article(article)
                 if article_id:
                     total_saved += 1
+                    new_articles.append(article)
 
     print("\n" + "=" * 60)
     print(f"BANKER.AZ SUMMARY")
@@ -88,21 +97,23 @@ def scrape_banker_az(db: Database, num_pages: int = 2, limit_per_page: int = 10)
         'total': total_found,
         'scraped': total_scraped,
         'saved': total_saved,
-        'skipped': total_skipped
+        'skipped': total_skipped,
+        'new_articles': new_articles
     }
 
 
-def scrape_marja_az(db: Database, num_pages: int = 2, limit_per_page: int = 10) -> Dict:
+def scrape_marja_az(db: Database, summarizer: GeminiSummarizer, num_pages: int = 2, limit_per_page: int = 10) -> Dict:
     """
     Scrape articles from Marja.az
 
     Args:
         db: Database instance
+        summarizer: GeminiSummarizer instance
         num_pages: Number of pages to scrape
         limit_per_page: Maximum articles per page
 
     Returns:
-        Dictionary with scraping statistics
+        Dictionary with scraping statistics and new articles
     """
     print("\n" + "=" * 60)
     print("SCRAPING MARJA.AZ")
@@ -113,6 +124,7 @@ def scrape_marja_az(db: Database, num_pages: int = 2, limit_per_page: int = 10) 
     total_scraped = 0
     total_saved = 0
     total_skipped = 0
+    new_articles = []
 
     for page in range(1, num_pages + 1):
         print(f"\n[Page {page}] Fetching article list...")
@@ -145,10 +157,16 @@ def scrape_marja_az(db: Database, num_pages: int = 2, limit_per_page: int = 10) 
             if article:
                 total_scraped += 1
 
+                # Summarize article
+                summary = summarizer.summarize_article(article)
+                if summary:
+                    article['summary'] = summary
+
                 # Save to database
                 article_id = db.insert_article(article)
                 if article_id:
                     total_saved += 1
+                    new_articles.append(article)
 
     print("\n" + "=" * 60)
     print(f"MARJA.AZ SUMMARY")
@@ -163,7 +181,8 @@ def scrape_marja_az(db: Database, num_pages: int = 2, limit_per_page: int = 10) 
         'total': total_found,
         'scraped': total_scraped,
         'saved': total_saved,
-        'skipped': total_skipped
+        'skipped': total_skipped,
+        'new_articles': new_articles
     }
 
 
@@ -173,12 +192,14 @@ def main():
     print("NEWS SCRAPER STARTED")
     print("=" * 60)
 
-    # Initialize Telegram reporter
+    # Initialize Telegram reporter and summarizer
     telegram = TelegramReporter()
+    summarizer = GeminiSummarizer()
 
     # Track overall statistics
-    start_time = datetime.utcnow()
+    start_time = datetime.now(datetime.UTC)
     sources_stats = []
+    all_new_articles = []
     errors = []
 
     # Send start notification
@@ -195,15 +216,17 @@ def main():
 
     try:
         # Scrape Banker.az - 2 pages, all articles
-        banker_stats = scrape_banker_az(db, num_pages=2, limit_per_page=999)
+        banker_stats = scrape_banker_az(db, summarizer, num_pages=2, limit_per_page=999)
         sources_stats.append(banker_stats)
+        all_new_articles.extend(banker_stats.get('new_articles', []))
 
         # Scrape Marja.az - 2 pages, all articles
-        marja_stats = scrape_marja_az(db, num_pages=2, limit_per_page=999)
+        marja_stats = scrape_marja_az(db, summarizer, num_pages=2, limit_per_page=999)
         sources_stats.append(marja_stats)
+        all_new_articles.extend(marja_stats.get('new_articles', []))
 
         # Add more scrapers here as you build them
-        # scrape_other_source(db, num_pages=2, limit_per_page=10)
+        # scrape_other_source(db, summarizer, num_pages=2, limit_per_page=10)
 
     except KeyboardInterrupt:
         print("\n\n[INFO] Scraping interrupted by user")
@@ -221,7 +244,7 @@ def main():
         # Close database connection
         db.close()
 
-        end_time = datetime.utcnow()
+        end_time = datetime.now(datetime.UTC)
 
         print("\n" + "=" * 60)
         print("NEWS SCRAPER COMPLETED")
@@ -233,6 +256,12 @@ def main():
         total_saved = sum(s['saved'] for s in sources_stats)
         total_skipped = sum(s['skipped'] for s in sources_stats)
 
+        # Create daily digest if there are new articles
+        daily_digest = None
+        if all_new_articles:
+            print(f"\n[INFO] Creating daily digest for {len(all_new_articles)} new articles...")
+            daily_digest = summarizer.create_daily_digest(all_new_articles)
+
         # Send Telegram report
         report_stats = {
             'start_time': start_time,
@@ -242,6 +271,7 @@ def main():
             'total_scraped': total_scraped,
             'total_saved': total_saved,
             'total_skipped': total_skipped,
+            'daily_digest': daily_digest,
             'errors': errors
         }
 

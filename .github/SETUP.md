@@ -51,6 +51,23 @@ Your Telegram chat ID(s) where reports will be sent.
    - For multiple chats, separate with commas: `123456789,-987654321`
 4. Click **Add secret**
 
+### GEMINI_API_KEY
+
+Your Google Gemini API key for article summarization.
+
+**Steps to add:**
+
+1. Follow the same steps as above
+2. Name: `GEMINI_API_KEY`
+3. Value: Your Gemini API key (e.g., `AIzaSy...`)
+4. Click **Add secret**
+
+**How to get Gemini API key:**
+- Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+- Click "Get API key"
+- Create new key or use existing
+- Copy the API key
+
 **How to get Telegram credentials:**
 
 1. **Get Bot Token:**
@@ -81,9 +98,10 @@ The workflow:
 1. Checks out the repository code
 2. Sets up Python 3.11
 3. Installs dependencies from `scraper/requirements.txt`
-4. Runs the scraper with secrets (DATABASE_URL, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
-5. Sends Telegram report with scraping results
-6. Logs completion status
+4. Runs the scraper with secrets (DATABASE_URL, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, GEMINI_API_KEY)
+5. Scrapes articles and generates AI summaries using Gemini
+6. Sends Telegram report with scraping results and daily digest
+7. Logs completion status
 
 ## Telegram Reporting
 
@@ -96,6 +114,7 @@ The scraper automatically sends comprehensive reports to your Telegram chat:
 - 💾 New articles saved to database
 - ⏭ Duplicate articles skipped
 - 📚 Per-source breakdown with emojis
+- 📋 Daily digest (AI-powered summary of all new articles)
 - ❌ Error alerts (if any occur)
 
 **Notifications:**
@@ -124,14 +143,18 @@ Before committing, test the scraper locally:
 
 ```bash
 # Make sure .env.local has all required variables:
-# - DATABASE_URL
+# - DATABASE_URL (required)
+# - GEMINI_API_KEY (required for summarization)
 # - TELEGRAM_BOT_TOKEN (optional for testing)
 # - TELEGRAM_CHAT_ID (optional for testing)
 
 python scraper/main.py
 ```
 
-**Note:** The scraper will work without Telegram credentials, but reports won't be sent.
+**Notes:**
+- The scraper will work without Telegram credentials, but reports won't be sent
+- Summarization will be skipped if GEMINI_API_KEY is missing
+- Each scraping run respects Gemini API free tier limits (15 requests/minute)
 
 ## Notes
 
@@ -139,5 +162,8 @@ python scraper/main.py
 - Python dependencies are cached for faster execution
 - The workflow will fail if DATABASE_URL is not configured
 - Telegram credentials are optional but recommended for monitoring
+- GEMINI_API_KEY is required for article summarization
 - Each run will skip duplicate articles automatically
 - Reports are sent in HTML format with emoji indicators for easy reading
+- Summarization uses Gemini 1.5 Flash model (fast, efficient, free tier friendly)
+- Rate limiting is automatically handled (15 requests/minute maximum)
