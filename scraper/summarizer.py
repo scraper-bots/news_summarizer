@@ -39,10 +39,11 @@ class GeminiSummarizer:
 
             genai.configure(api_key=self.api_key)
 
-            # Use Gemini 1.5 Flash (fastest, highest rate limits)
-            self.model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
+            # Use Gemini Pro (stable, well-supported)
+            # Available models: gemini-pro, gemini-1.5-pro-latest, gemini-1.5-flash-latest
+            self.model = genai.GenerativeModel('gemini-pro')
 
-            print("[SUCCESS] Gemini API initialized (gemini-1.5-flash)")
+            print("[SUCCESS] Gemini API initialized (gemini-pro)")
 
         except ImportError:
             print("[ERROR] google-generativeai package not installed")
