@@ -10,13 +10,13 @@ The scraper runs automatically:
 
 ## Required GitHub Secrets
 
-You need to configure the following secret in your GitHub repository:
+You need to configure the following secrets in your GitHub repository:
 
 ### DATABASE_URL
 
 Your PostgreSQL connection string from Neon.
 
-**Steps to add the secret:**
+**Steps to add:**
 
 1. Go to your GitHub repository
 2. Click **Settings** → **Secrets and variables** → **Actions**
@@ -27,6 +27,42 @@ Your PostgreSQL connection string from Neon.
    postgresql://user:password@host/database?sslmode=require
    ```
 6. Click **Add secret**
+
+### TELEGRAM_BOT_TOKEN
+
+Your Telegram bot token for sending scraping reports.
+
+**Steps to add:**
+
+1. Follow the same steps as above
+2. Name: `TELEGRAM_BOT_TOKEN`
+3. Value: Your bot token from BotFather (e.g., `123456789:ABCdefGHIjklMNOpqrsTUVwxyz`)
+4. Click **Add secret**
+
+### TELEGRAM_CHAT_ID
+
+Your Telegram chat ID(s) where reports will be sent.
+
+**Steps to add:**
+
+1. Follow the same steps as above
+2. Name: `TELEGRAM_CHAT_ID`
+3. Value: Your chat ID (e.g., `123456789` or `-123456789` for groups)
+   - For multiple chats, separate with commas: `123456789,-987654321`
+4. Click **Add secret**
+
+**How to get Telegram credentials:**
+
+1. **Get Bot Token:**
+   - Open Telegram and search for `@BotFather`
+   - Send `/newbot` and follow instructions
+   - Copy the token provided
+
+2. **Get Chat ID:**
+   - Start a chat with your bot
+   - Send any message to the bot
+   - Visit: `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
+   - Find your chat ID in the response
 
 ## Manual Trigger
 
@@ -45,30 +81,63 @@ The workflow:
 1. Checks out the repository code
 2. Sets up Python 3.11
 3. Installs dependencies from `scraper/requirements.txt`
-4. Runs the scraper with `DATABASE_URL` from secrets
-5. Logs completion status
+4. Runs the scraper with secrets (DATABASE_URL, TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID)
+5. Sends Telegram report with scraping results
+6. Logs completion status
+
+## Telegram Reporting
+
+The scraper automatically sends comprehensive reports to your Telegram chat:
+
+**📰 Report includes:**
+- ⏱️ Scraping duration
+- 📊 Number of sources scraped
+- 📝 Total articles found
+- 💾 New articles saved to database
+- ⏭ Duplicate articles skipped
+- 📚 Per-source breakdown with emojis
+- ❌ Error alerts (if any occur)
+
+**Notifications:**
+- 🚀 Start notification when scraping begins
+- 📰 Detailed report when scraping completes
+- 🚨 Error alerts for critical failures
 
 ## Monitoring
 
-To check scraping results:
+You can monitor scraping in two ways:
 
-1. Go to **Actions** tab
-2. Click on the latest workflow run
-3. View logs for each step
-4. Check for errors or successful completion
+**1. Telegram (Recommended):**
+- Receive instant reports in your Telegram chat
+- Easy-to-read format with emojis
+- No need to check GitHub
+
+**2. GitHub Actions:**
+- Go to **Actions** tab
+- Click on the latest workflow run
+- View detailed logs for each step
+- Check for errors or successful completion
 
 ## Testing Locally
 
 Before committing, test the scraper locally:
 
 ```bash
-# Make sure .env.local has DATABASE_URL
+# Make sure .env.local has all required variables:
+# - DATABASE_URL
+# - TELEGRAM_BOT_TOKEN (optional for testing)
+# - TELEGRAM_CHAT_ID (optional for testing)
+
 python scraper/main.py
 ```
+
+**Note:** The scraper will work without Telegram credentials, but reports won't be sent.
 
 ## Notes
 
 - The workflow uses Ubuntu latest runner
 - Python dependencies are cached for faster execution
 - The workflow will fail if DATABASE_URL is not configured
+- Telegram credentials are optional but recommended for monitoring
 - Each run will skip duplicate articles automatically
+- Reports are sent in HTML format with emoji indicators for easy reading
