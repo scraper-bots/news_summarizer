@@ -56,12 +56,11 @@ class Database:
         """
         try:
             query = sql.SQL("""
-                INSERT INTO news.articles (title, content, summary, source, url, published_date, language)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                INSERT INTO news.articles (title, content, source, url, published_date, language)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 ON CONFLICT (url) DO UPDATE
                 SET title = EXCLUDED.title,
                     content = EXCLUDED.content,
-                    summary = EXCLUDED.summary,
                     published_date = EXCLUDED.published_date,
                     updated_at = CURRENT_TIMESTAMP
                 RETURNING id
@@ -70,7 +69,6 @@ class Database:
             self.cursor.execute(query, (
                 article.get('title'),
                 article.get('content'),
-                article.get('summary'),
                 article.get('source'),
                 article.get('url'),
                 article.get('published_date'),
@@ -123,6 +121,50 @@ class Database:
         except Exception as e:
             print(f"[ERROR] Error checking article existence: {e}")
             return False
+
+    def insert_scraping_summary(self, summary_data: Dict) -> Optional[int]:
+        """
+        Insert a scraping session summary
+
+        Args:
+            summary_data: Dictionary with keys:
+                - summary: str (comprehensive summary text)
+                - articles_count: int (total articles found)
+                - sources_count: int (number of sources)
+                - new_articles_count: int (new articles saved)
+                - scraping_duration_seconds: float (optional)
+
+        Returns:
+            Summary ID if successful, None otherwise
+        """
+        try:
+            query = sql.SQL("""
+                INSERT INTO news.scraping_summaries
+                (summary, articles_count, sources_count, new_articles_count, scraping_duration_seconds)
+                VALUES (%s, %s, %s, %s, %s)
+                RETURNING id
+            """)
+
+            self.cursor.execute(query, (
+                summary_data.get('summary'),
+                summary_data.get('articles_count'),
+                summary_data.get('sources_count'),
+                summary_data.get('new_articles_count'),
+                summary_data.get('scraping_duration_seconds')
+            ))
+
+            result = self.cursor.fetchone()
+            self.conn.commit()
+
+            summary_id = result['id'] if result else None
+            print(f"[SUCCESS] Scraping summary saved (ID: {summary_id})")
+
+            return summary_id
+
+        except Exception as e:
+            print(f"[ERROR] Error inserting scraping summary: {e}")
+            self.conn.rollback()
+            return None
 
     def get_articles_by_source(self, source: str, limit: int = 10) -> List[Dict]:
         """Retrieve articles from a specific source"""

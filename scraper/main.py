@@ -73,12 +73,7 @@ def scrape_banker_az(db: Database, summarizer: GeminiSummarizer, num_pages: int 
             if article:
                 total_scraped += 1
 
-                # Summarize article
-                summary = summarizer.summarize_article(article)
-                if summary:
-                    article['summary'] = summary
-
-                # Save to database
+                # Save to database (no individual summarization)
                 article_id = db.insert_article(article)
                 if article_id:
                     total_saved += 1
@@ -157,12 +152,7 @@ def scrape_marja_az(db: Database, summarizer: GeminiSummarizer, num_pages: int =
             if article:
                 total_scraped += 1
 
-                # Summarize article
-                summary = summarizer.summarize_article(article)
-                if summary:
-                    article['summary'] = summary
-
-                # Save to database
+                # Save to database (no individual summarization)
                 article_id = db.insert_article(article)
                 if article_id:
                     total_saved += 1
@@ -256,11 +246,23 @@ def main():
         total_saved = sum(s['saved'] for s in sources_stats)
         total_skipped = sum(s['skipped'] for s in sources_stats)
 
-        # Create daily digest if there are new articles
-        daily_digest = None
+        # Create comprehensive session summary if there are new articles
+        session_summary = None
         if all_new_articles:
-            print(f"\n[INFO] Creating daily digest for {len(all_new_articles)} new articles...")
-            daily_digest = summarizer.create_daily_digest(all_new_articles)
+            print(f"\n[INFO] Creating comprehensive summary for {len(all_new_articles)} new articles...")
+            session_summary = summarizer.create_session_summary(all_new_articles, sources_stats)
+
+            # Save session summary to database
+            if session_summary:
+                duration = (end_time - start_time).total_seconds()
+                summary_data = {
+                    'summary': session_summary,
+                    'articles_count': total_found,
+                    'sources_count': len(sources_stats),
+                    'new_articles_count': total_saved,
+                    'scraping_duration_seconds': duration
+                }
+                db.insert_scraping_summary(summary_data)
 
         # Send Telegram report
         report_stats = {
@@ -271,7 +273,7 @@ def main():
             'total_scraped': total_scraped,
             'total_saved': total_saved,
             'total_skipped': total_skipped,
-            'daily_digest': daily_digest,
+            'session_summary': session_summary,
             'errors': errors
         }
 

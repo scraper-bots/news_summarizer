@@ -137,11 +137,11 @@ class TelegramReporter:
                     )
                 message_parts.append("")
 
-            # Daily digest (if available)
-            if stats.get('daily_digest'):
+            # Session summary (if available)
+            if stats.get('session_summary'):
                 message_parts.extend([
-                    "📋 <b>Daily Digest</b>",
-                    stats['daily_digest'],
+                    "📋 <b>Session Summary</b>",
+                    stats['session_summary'],
                     ""
                 ])
 
