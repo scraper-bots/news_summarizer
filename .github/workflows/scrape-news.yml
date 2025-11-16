@@ -1,0 +1,40 @@
+name: Daily News Scraper
+
+on:
+  # Run daily at 09:00 UTC (13:00 Azerbaijan time)
+  schedule:
+    - cron: '0 9 * * *'
+
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r scraper/requirements.txt
+
+      - name: Run news scraper
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          python scraper/main.py
+
+      - name: Log completion
+        if: always()
+        run: |
+          echo "Scraping job completed at $(date)"
+          echo "Status: ${{ job.status }}"
