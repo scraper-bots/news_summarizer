@@ -39,11 +39,10 @@ class GeminiSummarizer:
 
             genai.configure(api_key=self.api_key)
 
-            # Use Gemini Pro (stable, well-supported)
-            # Available models: gemini-pro, gemini-1.5-pro-latest, gemini-1.5-flash-latest
-            self.model = genai.GenerativeModel('gemini-pro')
+            # Use Gemini Flash Latest (fast, stable, good for summaries)
+            self.model = genai.GenerativeModel('gemini-flash-latest')
 
-            print("[SUCCESS] Gemini API initialized (gemini-pro)")
+            print("[SUCCESS] Gemini API initialized (gemini-flash-latest)")
 
         except ImportError:
             print("[ERROR] google-generativeai package not installed")
@@ -78,54 +77,16 @@ class GeminiSummarizer:
         # Record this request
         self.request_times.append(time.time())
 
-    def summarize_article(self, article: Dict) -> Optional[str]:
+    def create_session_summary(self, articles: List[Dict], sources_stats: List[Dict]) -> Optional[str]:
         """
-        Summarize a single article
+        Create comprehensive summary of entire scraping session
 
         Args:
-            article: Article dictionary with 'title' and 'content'
+            articles: List of ALL articles (new ones) from this session
+            sources_stats: List of stats per source
 
         Returns:
-            Summary text (2-3 sentences in Azerbaijani)
-        """
-        if not self.enabled:
-            return None
-
-        try:
-            # Wait if needed to respect rate limits
-            self._wait_for_rate_limit()
-
-            # Create prompt
-            prompt = f"""Aşağıdakı xəbər məqaləsini 2-3 cümlə ilə Azərbaycan dilində yekunlaşdır.
-Yekunlaşdırma qısa, aydın və informativ olmalıdır.
-
-Başlıq: {article['title']}
-
-Mətn:
-{article['content'][:3000]}
-
-Yekunlaşdırma:"""
-
-            # Generate summary
-            response = self.model.generate_content(prompt)
-            summary = response.text.strip()
-
-            print(f"[SUCCESS] Summarized: {article['title'][:50]}...")
-            return summary
-
-        except Exception as e:
-            print(f"[ERROR] Failed to summarize article: {e}")
-            return None
-
-    def create_daily_digest(self, articles: List[Dict]) -> Optional[str]:
-        """
-        Create a daily digest summary of multiple articles
-
-        Args:
-            articles: List of article dictionaries with 'title', 'source', 'summary'
-
-        Returns:
-            Digest summary in Azerbaijani
+            Comprehensive summary in Azerbaijani covering all articles
         """
         if not self.enabled or not articles:
             return None
@@ -134,41 +95,58 @@ Yekunlaşdırma:"""
             # Wait if needed to respect rate limits
             self._wait_for_rate_limit()
 
-            # Build article list for digest
-            article_list = []
-            for i, article in enumerate(articles[:20], 1):  # Limit to 20 articles
-                summary = article.get('summary', article.get('content', '')[:200])
-                article_list.append(
+            # Prepare article summaries (title + first part of content)
+            article_summaries = []
+            for i, article in enumerate(articles, 1):
+                # Limit content to avoid token overflow
+                content_snippet = article.get('content', '')[:300]
+                article_summaries.append(
                     f"{i}. [{article['source']}] {article['title']}\n"
-                    f"   {summary}"
+                    f"   {content_snippet}..."
                 )
 
-            articles_text = "\n\n".join(article_list)
+            # Combine all articles (limit total to stay within token limits)
+            # Gemini Flash: ~32K input tokens ≈ 24K words ≈ 120K chars
+            articles_text = "\n\n".join(article_summaries[:50])  # Max 50 articles per summary
 
-            # Create digest prompt
-            prompt = f"""Aşağıdakı {len(articles)} xəbər məqaləsindən gündəlik xəbər icmalı yarat.
+            # Create sources overview
+            sources_overview = "\n".join([
+                f"- {s['name']}: {s['saved']} xəbər"
+                for s in sources_stats
+            ])
 
-İcmal aşağıdakı formada olmalıdır:
-- Ən vacib xəbərləri qeyd et
-- Əsas mövzuları qruplaşdır
-- 5-7 bullet point ilə yazılmalıdır
-- Azərbaycan dilində olmalıdır
+            # Create comprehensive prompt
+            prompt = f"""Aşağıdakı xəbər toplama sessiyasından ətraflı icmal hazırla.
 
-Xəbərlər:
+MƏNBƏLƏR:
+{sources_overview}
 
+TOPLAM: {len(articles)} yeni xəbər
+
+XƏBƏRLƏR:
 {articles_text}
 
-Gündəlik İcmal:"""
+ÖNEMLİ GÖSTƏRIŞLƏR:
+1. İcmal Azərbaycan dilində olmalıdır
+2. Bütün mühüm xəbərləri əhatə etməlidir
+3. Xəbərləri mövzulara görə qruplaşdır (məsələn: İqtisadiyyat, Siyasət, Maliyyə və s.)
+4. Hər mövzu üzrə 3-5 bullet point ver
+5. Ümumi qısa giriş və yekunlaşdırma əlavə et
 
-            # Generate digest
+ƏTRAFL İCMAL:"""
+
+            # Generate comprehensive summary
             response = self.model.generate_content(prompt)
-            digest = response.text.strip()
+            summary = response.text.strip()
 
-            print(f"[SUCCESS] Created daily digest for {len(articles)} articles")
-            return digest
+            print(f"[SUCCESS] Created session summary for {len(articles)} articles from {len(sources_stats)} sources")
+            return summary
 
         except Exception as e:
-            print(f"[ERROR] Failed to create daily digest: {e}")
+            try:
+                print(f"[ERROR] Failed to create session summary: {e}")
+            except (UnicodeEncodeError, UnicodeDecodeError):
+                print(f"[ERROR] Failed to create session summary (encoding error)")
             return None
 
     def get_usage_stats(self) -> Dict:
