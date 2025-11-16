@@ -2,10 +2,21 @@
 News summarization using Google Gemini API
 """
 
+import sys
 import os
 import time
 from typing import Dict, List, Optional
 from datetime import datetime
+
+# Fix encoding for Azerbaijani characters on Windows
+if sys.platform == 'win32' and hasattr(sys.stdout, 'buffer'):
+    import io
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except AttributeError:
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
 
 class GeminiSummarizer:
