@@ -23,6 +23,7 @@ from sources.banker_az import BankerAzScraper
 from sources.marja_az import MarjaAzScraper
 from sources.report_az import ReportAzScraper
 from sources.fed_az import FedAzScraper
+from sources.sonxeber_az import SonxeberAzScraper
 
 
 def test_scraper(scraper, name, test_category=None):
@@ -117,7 +118,7 @@ def main():
 
     # Test 1: Banker.az
     print("\n\n" + "█" * 70)
-    print("TEST 1/4: BANKER.AZ")
+    print("TEST 1/5: BANKER.AZ")
     print("█" * 70)
     banker_scraper = BankerAzScraper()
     banker_results = test_scraper(banker_scraper, "Banker.az")
@@ -125,7 +126,7 @@ def main():
 
     # Test 2: Marja.az
     print("\n\n" + "█" * 70)
-    print("TEST 2/4: MARJA.AZ")
+    print("TEST 2/5: MARJA.AZ")
     print("█" * 70)
     marja_scraper = MarjaAzScraper()
     marja_results = test_scraper(marja_scraper, "Marja.az")
@@ -133,7 +134,7 @@ def main():
 
     # Test 3: Report.az
     print("\n\n" + "█" * 70)
-    print("TEST 3/4: REPORT.AZ")
+    print("TEST 3/5: REPORT.AZ")
     print("█" * 70)
     report_scraper = ReportAzScraper()
     report_results = test_scraper(report_scraper, "Report.az")
@@ -141,11 +142,19 @@ def main():
 
     # Test 4: Fed.az (test first category)
     print("\n\n" + "█" * 70)
-    print("TEST 4/4: FED.AZ")
+    print("TEST 4/5: FED.AZ")
     print("█" * 70)
     fed_scraper = FedAzScraper()
     fed_results = test_scraper(fed_scraper, "Fed.az", test_category="az/maliyye")
     all_results.append(fed_results)
+
+    # Test 5: Sonxeber.az
+    print("\n\n" + "█" * 70)
+    print("TEST 5/5: SONXEBER.AZ")
+    print("█" * 70)
+    sonxeber_scraper = SonxeberAzScraper()
+    sonxeber_results = test_scraper(sonxeber_scraper, "Sonxeber.az")
+    all_results.append(sonxeber_results)
 
     # Summary
     print("\n\n" + "=" * 70)
