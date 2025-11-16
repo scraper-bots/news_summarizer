@@ -4,7 +4,7 @@ Telegram bot for scraping notifications and reporting
 
 import os
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 
@@ -184,7 +184,7 @@ class TelegramReporter:
         if not self.enabled:
             return False
 
-        timestamp = datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
+        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
         message = (
             "🚨 <b>Scraping Error Alert</b>\n"
             "━━━━━━━━━━━━━━━━━━━━\n\n"
@@ -208,7 +208,7 @@ class TelegramReporter:
         if not self.enabled:
             return False
 
-        timestamp = datetime.now(datetime.UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
+        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
         message = (
             "🚀 <b>Scraping Started</b>\n"
             "━━━━━━━━━━━━━━━━━━━━\n\n"
