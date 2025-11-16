@@ -407,6 +407,11 @@ def main():
         sources_stats.append(report_stats)
         all_new_articles.extend(report_stats.get('new_articles', []))
 
+        # Scrape Fed.az - 2 pages per category, all articles
+        fed_stats = scrape_fed_az(db, summarizer, scraping_session_id, num_pages=2, limit_per_page=999)
+        sources_stats.append(fed_stats)
+        all_new_articles.extend(fed_stats.get('new_articles', []))
+
         end_time = datetime.now(timezone.utc)
 
         print("\n" + "=" * 60)
