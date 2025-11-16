@@ -1,0 +1,52 @@
+================================================================================
+VERIFYING ARTICLE-TO-SESSION RELATIONSHIPS
+================================================================================
+
+[1] SCRAPING SESSIONS:
+--------------------------------------------------------------------------------
+
+Session ID: 3
+  Date: 2025-11-16
+  New articles: 0
+  Total found: 82
+  Summary: No new articles found in this scraping session....
+
+Session ID: 2
+  Date: 2025-11-16
+  New articles: 56
+  Total found: 82
+  Summary: ## Xəbər Toplama Sessiyasının Ətraflı İcmalı (Banker.az və M...
+
+================================================================================
+[2] ARTICLES LINKED TO EACH SESSION:
+================================================================================
+
+Session 3: 0 articles linked
+
+Session 2: 56 articles linked
+  Sample articles:
+    - [341] Marja.az: Ölkədaxili nağdsız əməliyyatların həcmi 24% artıb...
+    - [340] Marja.az: Elon Musk-ın siyasi mövqeyi Tesla-ya baha başa gəl...
+    - [339] Marja.az: Azərbaycanda 5 bankın balans kapitalı 225 milyon m...
+    - [338] Marja.az: Avropa bankı Azərbaycanda "yaşıl iqtisadiyyat"ın m...
+    - [337] Marja.az: Azərbaycanda 5 bankın nizamnamə kapitalı 300 milyo...
+
+================================================================================
+[3] ORPHANED ARTICLES (no session link):
+================================================================================
+
+[SUCCESS] All articles are linked to a scraping session!
+
+================================================================================
+[4] OVERALL STATISTICS:
+================================================================================
+
+Total articles: 56
+Total sessions: 2
+Linked articles: 56
+Orphaned articles: 0
+Link coverage: 100.0%
+
+================================================================================
+VERIFICATION COMPLETE
+================================================================================

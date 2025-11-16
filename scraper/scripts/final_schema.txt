@@ -1,0 +1,68 @@
+================================================================================
+FINAL SCHEMA VERIFICATION
+================================================================================
+
+[TABLE 1] news.articles
+--------------------------------------------------------------------------------
+  id                        integer              NOT NULL DEFAULT nextval('news.articles_id_seq'::regclass)
+  title                     text                 NOT NULL
+  content                   text                 NOT NULL
+  source                    character varying    NOT NULL
+  url                       text                 NOT NULL
+  published_date            timestamp without time zone NULL
+  scraped_at                timestamp without time zone NULL DEFAULT CURRENT_TIMESTAMP
+  language                  character varying    NULL DEFAULT 'az'::character varying
+  created_at                timestamp without time zone NULL DEFAULT CURRENT_TIMESTAMP
+  updated_at                timestamp without time zone NULL DEFAULT CURRENT_TIMESTAMP
+  scraping_session_id       integer              NULL
+
+Rows: 56
+
+================================================================================
+[TABLE 2] news.scraping_summaries
+--------------------------------------------------------------------------------
+  id                        integer              NOT NULL DEFAULT nextval('news.scraping_summaries_id_seq'::regclass)
+  scraping_date             date                 NOT NULL DEFAULT CURRENT_DATE
+  summary                   text                 NOT NULL
+  articles_count            integer              NOT NULL
+  sources_count             integer              NOT NULL
+  new_articles_count        integer              NOT NULL
+  scraping_duration_seconds numeric              NULL
+  created_at                timestamp without time zone NULL DEFAULT CURRENT_TIMESTAMP
+  updated_at                timestamp without time zone NULL DEFAULT CURRENT_TIMESTAMP
+
+Rows: 2
+
+================================================================================
+[FOREIGN KEYS]
+--------------------------------------------------------------------------------
+  articles.scraping_session_id -> scraping_summaries.id
+
+================================================================================
+[INDEXES]
+--------------------------------------------------------------------------------
+
+articles:
+  - articles_pkey
+  - articles_url_key
+  - idx_articles_published_date
+  - idx_articles_scraped_at
+  - idx_articles_session
+  - idx_articles_source
+
+scraping_summaries:
+  - idx_scraping_summaries_date
+  - scraping_summaries_pkey
+
+================================================================================
+[RELATIONSHIP STATISTICS]
+--------------------------------------------------------------------------------
+
+Session    Date         Expected   Linked     Status
+------------------------------------------------------------
+3          2025-11-16   0          0          ✓
+2          2025-11-16   56         56         ✓
+
+================================================================================
+VERIFICATION COMPLETE
+================================================================================
