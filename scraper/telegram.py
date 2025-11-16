@@ -134,17 +134,15 @@ class TelegramReporter:
 
     def send_scraping_report(self, stats: Dict) -> bool:
         """
-        Send comprehensive scraping report
+        Send professional banking intelligence report for public channel
 
         Args:
-            stats: Dictionary containing scraping statistics
+            stats: Dictionary containing statistics
                 - start_time: datetime
                 - end_time: datetime
                 - sources: List of source stats
-                - total_found: int (total articles found across all sources)
-                - total_scraped: int (successfully scraped, excluding duplicates)
                 - total_saved: int (saved to database)
-                - total_skipped: int (duplicates skipped)
+                - session_summary: str (banking intelligence)
                 - errors: List of errors (optional)
 
         Returns:
@@ -154,45 +152,23 @@ class TelegramReporter:
             return False
 
         try:
-            # Calculate duration
-            duration = (stats['end_time'] - stats['start_time']).total_seconds()
-            duration_str = self.format_duration(duration)
+            # Professional public channel format
+            timestamp = stats['end_time'].strftime("%d.%m.%Y")
 
-            # Build clean header
-            success_emoji = "✅" if stats['total_saved'] > 0 else "⚠️"
+            # Check if we have banking intelligence
+            if not stats.get('session_summary'):
+                # No intelligence to report
+                return False
+
             message_parts = [
-                f"{success_emoji} <b>Banking News Report</b>",
-                f"⏱ {duration_str} | 💾 {stats['total_saved']} yeni xəbər",
-                ""
+                f"📊 <b>Azərbaycan Bank Sektoru</b>",
+                f"📅 {timestamp}",
+                "",
+                stats['session_summary']
             ]
 
-            # Per-source breakdown (compact)
-            if stats['sources']:
-                sources_line = " | ".join([
-                    f"{source['name']}: {source['saved']}"
-                    for source in stats['sources']
-                ])
-                message_parts.append(f"📚 {sources_line}")
-                message_parts.append("")
-
-            # Banking intelligence (if available)
-            if stats.get('session_summary'):
-                message_parts.extend([
-                    "🏦 <b>Banking Intelligence</b>",
-                    "",
-                    stats['session_summary'],
-                    ""
-                ])
-
-            # Errors (compact)
-            if stats.get('errors'):
-                error_count = len(stats['errors'])
-                message_parts.append(f"⚠️ {error_count} xəta baş verdi")
-                message_parts.append("")
-
-            # Clean footer
-            timestamp = stats['end_time'].strftime("%H:%M, %d.%m.%Y")
-            message_parts.append(f"🕒 {timestamp}")
+            # Only show errors if they exist (very rare, keep internal)
+            # Skip showing errors in public channel
 
             message = "\n".join(message_parts)
 
@@ -200,7 +176,7 @@ class TelegramReporter:
             return self.send_message(message)
 
         except Exception as e:
-            print(f"[ERROR] Failed to build Telegram report: {e}")
+            print(f"[ERROR] Failed to build banking intelligence report: {e}")
             return False
 
     def send_error_alert(self, error_message: str) -> bool:

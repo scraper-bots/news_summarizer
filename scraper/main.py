@@ -194,8 +194,7 @@ def main():
     all_new_articles = []
     errors = []
 
-    # Send start notification
-    telegram.send_start_notification(num_sources=2)
+    # Skip start notification for public channel (no need to announce processing)
 
     # Initialize database connection
     db = Database()

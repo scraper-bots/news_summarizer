@@ -178,28 +178,23 @@ RELEVANT XƏBƏRLƏR:"""
             # STEP 2: Create banking intelligence report
             self._wait_for_rate_limit()
 
-            # Prepare article summaries
+            # Prepare article summaries WITHOUT source names (for public channel)
             article_summaries = []
             for i, article in enumerate(relevant_articles, 1):
                 content_snippet = article.get('content', '')[:400]
+                # Don't mention source name - looks more professional
                 article_summaries.append(
-                    f"{i}. [{article['source']}] {article['title']}\n"
+                    f"{i}. {article['title']}\n"
                     f"   {content_snippet}..."
                 )
 
             articles_text = "\n\n".join(article_summaries[:40])
 
-            # Create sources overview
-            sources_overview = "\n".join([
-                f"- {s['name']}: {s['saved']} xəbər"
-                for s in sources_stats
-            ])
+            # Banking intelligence prompt - SHORT and CLEAN format for PUBLIC CHANNEL
+            prompt = f"""Sən Azərbaycan bank sektoru üzrə peşəkar analitik mərkəzsən.
+Aşağıdakı xəbərlərdən QISA və PROFESSIONAL banking intelligence report hazırla.
 
-            # Banking intelligence prompt - SHORT and CLEAN format
-            prompt = f"""Sən Azərbaycan bankında Business Analyst üçün strateji məsləhətçisən.
-Aşağıdakı bank sektoruna aid xəbərlərdən QISA və KONKRET banking intelligence report hazırla.
-
-BANK XƏBƏRLƏRI ({len(relevant_articles)}/{len(articles)}):
+BANK SEKTORU XƏBƏRLƏRI (SON 24 SAAT):
 {articles_text}
 
 REPORT FORMATI (QISA VƏ SADƏ):
@@ -244,8 +239,11 @@ VACIB QAYDALAR:
 - Heç bir markdown simvol işlətmə (###, **, və s.)
 - Rəqəmlər və faktlar ver, söz-söhbət yox
 - Azərbaycan dilində sadə professional dil
+- MƏNBƏ QEYD ETMƏ (Banker.az, Marja.az və s. adlarını çəkmə)
+- Professional analitik kimi yaz, xəbər toplayıcı kimi yox
+- "Xəbərlərə görə", "Bildirilir ki" kimi ifadələr işlət
 
-REPORT:"""
+PROFESSIONAL BANKING INTELLIGENCE REPORT:"""
 
             # Generate banking intelligence
             response = self.model.generate_content(prompt)
