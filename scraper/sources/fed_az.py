@@ -1,6 +1,6 @@
 """
-Fed.az news scraper
-Scrapes news articles from fed.az across multiple categories
+Fed.az async news scraper
+Scrapes news articles from fed.az across multiple categories using async/await
 """
 
 import sys
@@ -25,7 +25,7 @@ import re
 
 
 class FedAzScraper(BaseScraper):
-    """Scraper for fed.az news website"""
+    """Async scraper for fed.az news website"""
 
     def __init__(self):
         super().__init__(
@@ -39,7 +39,7 @@ class FedAzScraper(BaseScraper):
             "az/xaricde-emlak"  # Foreign real estate
         ]
 
-    def scrape_article_list(self, page: int = 1, category: str = None) -> List[str]:
+    async def scrape_article_list(self, page: int = 1, category: str = None) -> List[str]:
         """
         Scrape article URLs from a category page
 
@@ -59,7 +59,7 @@ class FedAzScraper(BaseScraper):
         else:
             url = f"{self.base_url}/{category}/{page}"
 
-        soup = self.fetch_page(url)
+        soup = await self.fetch_page(url)
         if not soup:
             return []
 
@@ -81,7 +81,7 @@ class FedAzScraper(BaseScraper):
 
         return article_urls
 
-    def scrape_all_categories(self, num_pages: int = 1) -> List[str]:
+    async def scrape_all_categories(self, num_pages: int = 1) -> List[str]:
         """
         Scrape articles from all categories
 
@@ -95,7 +95,7 @@ class FedAzScraper(BaseScraper):
         for category in self.categories:
             print(f"[INFO] Scraping {category}...")
             for page in range(1, num_pages + 1):
-                urls = self.scrape_article_list(page=page, category=category)
+                urls = await self.scrape_article_list(page=page, category=category)
                 all_urls.extend(urls)
                 print(f"[INFO] Found {len(urls)} articles on page {page} of {category}")
 
@@ -161,7 +161,7 @@ class FedAzScraper(BaseScraper):
             print(f"[WARNING] Could not parse date: {date_str}, error: {e}")
             return None
 
-    def scrape_article(self, url: str) -> Optional[Dict]:
+    async def scrape_article(self, url: str) -> Optional[Dict]:
         """
         Scrape a single article from fed.az
 
@@ -171,7 +171,7 @@ class FedAzScraper(BaseScraper):
         Returns:
             Dictionary with article data
         """
-        soup = self.fetch_page(url)
+        soup = await self.fetch_page(url)
         if not soup:
             return None
 
@@ -246,32 +246,3 @@ class FedAzScraper(BaseScraper):
         except Exception as e:
             print(f"[ERROR] Error scraping article {url}: {e}")
             return None
-
-
-# Test the scraper
-if __name__ == "__main__":
-    scraper = FedAzScraper()
-
-    print("Testing Fed.az scraper...")
-    print(f"Base URL: {scraper.base_url}")
-    print(f"Categories: {scraper.categories}")
-
-    # Test scraping article list from first category
-    print("\n--- Testing article list scraping ---")
-    urls = scraper.scrape_article_list(page=1, category="az/maliyye")
-    print(f"Found {len(urls)} articles from az/maliyye")
-
-    if urls:
-        # Test scraping first article
-        print("\n--- Testing article scraping ---")
-        test_url = urls[0]
-        print(f"Testing with: {test_url}")
-        article = scraper.scrape_article(test_url)
-
-        if article:
-            print(f"\nTitle: {article['title']}")
-            print(f"Published: {article['published_date']}")
-            print(f"Content length: {len(article['content'])} characters")
-            print(f"Content preview: {article['content'][:200]}...")
-        else:
-            print("Failed to scrape article")

@@ -1,6 +1,6 @@
 """
-APA.az news scraper
-Scrapes news articles from apa.az economy section
+APA.az async news scraper
+Scrapes news articles from apa.az economy section using async/await
 """
 
 import sys
@@ -25,7 +25,7 @@ import re
 
 
 class ApaAzScraper(BaseScraper):
-    """Scraper for apa.az news website"""
+    """Async scraper for apa.az news website"""
 
     def __init__(self):
         super().__init__(
@@ -40,7 +40,7 @@ class ApaAzScraper(BaseScraper):
             'sentyabr': 9, 'oktyabr': 10, 'noyabr': 11, 'dekabr': 12
         }
 
-    def scrape_article_list(self, page: int = 1) -> List[str]:
+    async def scrape_article_list(self, page: int = 1) -> List[str]:
         """
         Scrape article URLs from the economy category page
 
@@ -55,7 +55,7 @@ class ApaAzScraper(BaseScraper):
         else:
             url = f"{self.category_url}?page={page}"
 
-        soup = self.fetch_page(url)
+        soup = await self.fetch_page(url)
         if not soup:
             return []
 
@@ -131,9 +131,9 @@ class ApaAzScraper(BaseScraper):
 
         return None
 
-    def scrape_article(self, url: str) -> Optional[Dict]:
+    async def scrape_article(self, url: str) -> Optional[Dict]:
         """
-        Scrape a single article from apa.az
+        Scrape a single article from apa.az asynchronously
 
         Args:
             url: Article URL
@@ -141,7 +141,7 @@ class ApaAzScraper(BaseScraper):
         Returns:
             Dictionary with article data
         """
-        soup = self.fetch_page(url)
+        soup = await self.fetch_page(url)
         if not soup:
             return None
 

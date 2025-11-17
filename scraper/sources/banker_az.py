@@ -1,6 +1,6 @@
 """
-Banker.az news scraper
-Scrapes news articles from banker.az
+Banker.az async news scraper
+Scrapes news articles from banker.az using async/await
 """
 
 import sys
@@ -21,11 +21,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from base_scraper import BaseScraper
 from datetime import datetime
 from typing import List, Dict, Optional
-import re
 
 
 class BankerAzScraper(BaseScraper):
-    """Scraper for banker.az news website"""
+    """Async scraper for banker.az news website"""
 
     def __init__(self):
         super().__init__(
@@ -34,7 +33,7 @@ class BankerAzScraper(BaseScraper):
         )
         self.category_url = "https://banker.az/category/xYbYrlYr/"
 
-    def scrape_article_list(self, page: int = 1) -> List[str]:
+    async def scrape_article_list(self, page: int = 1) -> List[str]:
         """
         Scrape article URLs from the category page
 
@@ -49,7 +48,7 @@ class BankerAzScraper(BaseScraper):
         else:
             url = f"{self.category_url}page/{page}/"
 
-        soup = self.fetch_page(url)
+        soup = await self.fetch_page(url)
         if not soup:
             return []
 
@@ -67,7 +66,7 @@ class BankerAzScraper(BaseScraper):
 
         return article_urls
 
-    def scrape_article(self, url: str) -> Optional[Dict]:
+    async def scrape_article(self, url: str) -> Optional[Dict]:
         """
         Scrape a single article from banker.az
 
@@ -77,7 +76,7 @@ class BankerAzScraper(BaseScraper):
         Returns:
             Dictionary with article data
         """
-        soup = self.fetch_page(url)
+        soup = await self.fetch_page(url)
         if not soup:
             return None
 

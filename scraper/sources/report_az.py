@@ -1,5 +1,6 @@
 """
-Report.az scraper - Economy news section
+Report.az async scraper - Economy news section
+Scrapes news articles from report.az using async/await
 """
 
 from bs4 import BeautifulSoup
@@ -24,7 +25,7 @@ from base_scraper import BaseScraper
 
 
 class ReportAzScraper(BaseScraper):
-    """Scraper for Report.az economy news"""
+    """Async scraper for Report.az economy news"""
 
     def __init__(self):
         super().__init__(
@@ -33,7 +34,7 @@ class ReportAzScraper(BaseScraper):
         )
         self.category_url = f"{self.base_url}/iqtisadiyyat-xeberleri"
 
-    def scrape_article_list(self, page: int = 1) -> List[str]:
+    async def scrape_article_list(self, page: int = 1) -> List[str]:
         """
         Scrape list of article URLs from Report.az economy section
 
@@ -45,7 +46,7 @@ class ReportAzScraper(BaseScraper):
         """
         try:
             # Note: Report.az loads additional pages via AJAX, but we'll scrape the initial page
-            soup = self.fetch_page(self.category_url)
+            soup = await self.fetch_page(self.category_url)
             if not soup:
                 return []
 
@@ -70,7 +71,7 @@ class ReportAzScraper(BaseScraper):
             print(f"[ERROR] Failed to scrape article list from {self.source_name}: {e}")
             return []
 
-    def scrape_article(self, url: str) -> Optional[Dict]:
+    async def scrape_article(self, url: str) -> Optional[Dict]:
         """
         Scrape individual article from Report.az
 
@@ -81,7 +82,7 @@ class ReportAzScraper(BaseScraper):
             Dictionary with article data or None if failed
         """
         try:
-            soup = self.fetch_page(url)
+            soup = await self.fetch_page(url)
             if not soup:
                 return None
 

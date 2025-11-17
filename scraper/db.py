@@ -38,7 +38,11 @@ class Database:
         try:
             self.conn = psycopg2.connect(
                 self.connection_string,
-                client_encoding='UTF8'
+                client_encoding='UTF8',
+                keepalives=1,
+                keepalives_idle=30,
+                keepalives_interval=10,
+                keepalives_count=5
             )
             self.cursor = self.conn.cursor(cursor_factory=RealDictCursor)
             print("[SUCCESS] Database connected successfully")
@@ -46,6 +50,24 @@ class Database:
         except Exception as e:
             print(f"[ERROR] Database connection failed: {e}")
             return False
+
+    def ensure_connection(self):
+        """Ensure database connection is active, reconnect if needed"""
+        try:
+            if self.conn is None or self.conn.closed:
+                print("[INFO] Database connection lost, reconnecting...")
+                return self.connect()
+
+            # Test connection with a simple query
+            self.cursor.execute("SELECT 1")
+            return True
+        except Exception as e:
+            print(f"[WARNING] Connection test failed: {e}, reconnecting...")
+            try:
+                self.close()
+            except:
+                pass
+            return self.connect()
 
     def close(self):
         """Close database connection"""
@@ -67,6 +89,11 @@ class Database:
             Article ID if successful, None otherwise
         """
         try:
+            # Ensure connection is alive
+            if not self.ensure_connection():
+                print("[ERROR] Failed to establish database connection")
+                return None
+
             query = sql.SQL("""
                 INSERT INTO news.articles (title, content, source, url, published_date, language, scraping_session_id)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -107,7 +134,8 @@ class Database:
                 print(f"[ERROR] Error inserting article: {e}")
             except UnicodeEncodeError:
                 print(f"[ERROR] Error inserting article (encoding error in message)")
-            self.conn.rollback()
+            if self.conn and not self.conn.closed:
+                self.conn.rollback()
             return None
 
     def bulk_insert_articles(self, articles: List[Dict], scraping_session_id: Optional[int] = None) -> int:
@@ -130,6 +158,10 @@ class Database:
     def article_exists(self, url: str) -> bool:
         """Check if an article with the given URL already exists"""
         try:
+            # Ensure connection is alive
+            if not self.ensure_connection():
+                return False
+
             query = sql.SQL("SELECT id FROM news.articles WHERE url = %s")
             self.cursor.execute(query, (url,))
             return self.cursor.fetchone() is not None
@@ -153,6 +185,11 @@ class Database:
             Summary ID if successful, None otherwise
         """
         try:
+            # Ensure connection is alive
+            if not self.ensure_connection():
+                print("[ERROR] Failed to establish database connection")
+                return None
+
             query = sql.SQL("""
                 INSERT INTO news.scraping_summaries
                 (summary, articles_count, sources_count, new_articles_count, scraping_duration_seconds)
@@ -178,7 +215,8 @@ class Database:
 
         except Exception as e:
             print(f"[ERROR] Error inserting scraping summary: {e}")
-            self.conn.rollback()
+            if self.conn and not self.conn.closed:
+                self.conn.rollback()
             return None
 
     def update_scraping_summary(self, summary_id: int, summary_data: Dict) -> bool:
@@ -197,6 +235,11 @@ class Database:
             True if successful, False otherwise
         """
         try:
+            # Ensure connection is alive
+            if not self.ensure_connection():
+                print("[ERROR] Failed to establish database connection")
+                return False
+
             query = sql.SQL("""
                 UPDATE news.scraping_summaries
                 SET summary = %s,
@@ -221,12 +264,17 @@ class Database:
 
         except Exception as e:
             print(f"[ERROR] Error updating scraping summary: {e}")
-            self.conn.rollback()
+            if self.conn and not self.conn.closed:
+                self.conn.rollback()
             return False
 
     def get_articles_by_source(self, source: str, limit: int = 10) -> List[Dict]:
         """Retrieve articles from a specific source"""
         try:
+            # Ensure connection is alive
+            if not self.ensure_connection():
+                return []
+
             query = sql.SQL("""
                 SELECT * FROM news.articles
                 WHERE source = %s

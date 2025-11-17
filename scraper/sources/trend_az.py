@@ -1,6 +1,6 @@
 """
-Trend.az news scraper
-Scrapes news articles from az.trend.az
+Trend.az async news scraper
+Scrapes news articles from az.trend.az using async/await
 """
 
 import sys
@@ -25,7 +25,7 @@ import re
 
 
 class TrendAzScraper(BaseScraper):
-    """Scraper for az.trend.az news website"""
+    """Async scraper for az.trend.az news website"""
 
     def __init__(self):
         super().__init__(
@@ -34,7 +34,7 @@ class TrendAzScraper(BaseScraper):
         )
         self.category_url = "https://az.trend.az/business/"
 
-    def scrape_article_list(self, page: int = 1) -> List[str]:
+    async def scrape_article_list(self, page: int = 1) -> List[str]:
         """
         Scrape article URLs from the business page
 
@@ -49,7 +49,7 @@ class TrendAzScraper(BaseScraper):
         # Pagination can be added later if needed
         url = self.category_url
 
-        soup = self.fetch_page(url)
+        soup = await self.fetch_page(url)
         if not soup:
             return []
 
@@ -126,7 +126,7 @@ class TrendAzScraper(BaseScraper):
             print(f"[WARNING] Could not parse date: {date_str}, error: {e}")
             return None
 
-    def scrape_article(self, url: str) -> Optional[Dict]:
+    async def scrape_article(self, url: str) -> Optional[Dict]:
         """
         Scrape a single article from trend.az
 
@@ -136,7 +136,7 @@ class TrendAzScraper(BaseScraper):
         Returns:
             Dictionary with article data
         """
-        soup = self.fetch_page(url)
+        soup = await self.fetch_page(url)
         if not soup:
             return None
 
@@ -204,32 +204,3 @@ class TrendAzScraper(BaseScraper):
         except Exception as e:
             print(f"[ERROR] Error scraping article {url}: {e}")
             return None
-
-
-# Test the scraper
-if __name__ == "__main__":
-    scraper = TrendAzScraper()
-
-    print("Testing Trend.az scraper...")
-    print(f"Base URL: {scraper.base_url}")
-    print(f"Category URL: {scraper.category_url}")
-
-    # Test scraping article list from first page
-    print("\n--- Testing article list scraping ---")
-    urls = scraper.scrape_article_list(page=1)
-    print(f"Found {len(urls)} articles")
-
-    if urls:
-        # Test scraping first article
-        print("\n--- Testing article scraping ---")
-        test_url = urls[0]
-        print(f"Testing with: {test_url}")
-        article = scraper.scrape_article(test_url)
-
-        if article:
-            print(f"\nTitle: {article['title']}")
-            print(f"Published: {article['published_date']}")
-            print(f"Content length: {len(article['content'])} characters")
-            print(f"Content preview: {article['content'][:200]}...")
-        else:
-            print("Failed to scrape article")

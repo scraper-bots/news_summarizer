@@ -1,6 +1,6 @@
 """
-Marja.az news scraper
-Scrapes news articles from marja.az
+Marja.az async news scraper
+Scrapes news articles from marja.az using async/await
 """
 
 import sys
@@ -25,7 +25,7 @@ import re
 
 
 class MarjaAzScraper(BaseScraper):
-    """Scraper for marja.az news website"""
+    """Async scraper for marja.az news website"""
 
     def __init__(self):
         super().__init__(
@@ -34,7 +34,7 @@ class MarjaAzScraper(BaseScraper):
         )
         self.category_url = "https://marja.az/bank-kredit/12"
 
-    def scrape_article_list(self, page: int = 1) -> List[str]:
+    async def scrape_article_list(self, page: int = 1) -> List[str]:
         """
         Scrape article URLs from the category page
 
@@ -49,7 +49,7 @@ class MarjaAzScraper(BaseScraper):
         else:
             url = f"{self.category_url}?page={page}"
 
-        soup = self.fetch_page(url)
+        soup = await self.fetch_page(url)
         if not soup:
             return []
 
@@ -90,7 +90,7 @@ class MarjaAzScraper(BaseScraper):
             print(f"[WARNING] Could not parse date: {date_str} {time_str}, error: {e}")
             return None
 
-    def scrape_article(self, url: str) -> Optional[Dict]:
+    async def scrape_article(self, url: str) -> Optional[Dict]:
         """
         Scrape a single article from marja.az
 
@@ -100,7 +100,7 @@ class MarjaAzScraper(BaseScraper):
         Returns:
             Dictionary with article data
         """
-        soup = self.fetch_page(url)
+        soup = await self.fetch_page(url)
         if not soup:
             return None
 
