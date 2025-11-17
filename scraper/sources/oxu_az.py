@@ -116,7 +116,7 @@ class OxuAzScraper(BaseScraper):
     def parse_date(self, date_str: str) -> Optional[datetime]:
         """
         Parse Azerbaijani date string to datetime
-        Format: "15 noyabr, 2025 / 19:44" or "15 noy, 2025 / 19:44"
+        Format: "15 noyabr, 2025 / 19:44", "15 noy, 2025 / 19:44", "Bu gün / 12:18", "Dünən / 22:30"
 
         Args:
             date_str: Date string in Azerbaijani
@@ -125,24 +125,43 @@ class OxuAzScraper(BaseScraper):
             datetime object or None if parsing fails
         """
         try:
+            from datetime import timedelta
+
             # Clean the string
             date_str = date_str.strip()
 
-            # Remove icon text if present (e.g., "15 noyabr, 2025 / 19:44")
             # Split by "/" to separate date and time
             parts = date_str.split('/')
             if len(parts) < 2:
                 return None
 
-            date_part = parts[0].strip()
+            date_part = parts[0].strip().lower()
             time_part = parts[1].strip()
 
-            # Parse date part: "15 noyabr, 2025" or "15 noy, 2025"
+            # Parse time: "19:44"
+            time_components = time_part.split(':')
+            hour = 0
+            minute = 0
+            if len(time_components) >= 2:
+                hour = int(time_components[0])
+                minute = int(time_components[1])
+
+            # Handle relative dates
+            today = datetime.now()
+
+            if date_part == 'bu gün' or date_part == 'bu gun':  # Today
+                return datetime(today.year, today.month, today.day, hour, minute)
+
+            elif date_part == 'dünən' or date_part == 'dunen':  # Yesterday
+                yesterday = today - timedelta(days=1)
+                return datetime(yesterday.year, yesterday.month, yesterday.day, hour, minute)
+
+            # Parse absolute date: "15 noyabr, 2025" or "15 noy, 2025"
             date_components = date_part.replace(',', '').split()
 
             if len(date_components) >= 3:
                 day = int(date_components[0])
-                month_str = date_components[1].lower()
+                month_str = date_components[1]
                 year = int(date_components[2])
 
                 # Get month number
@@ -150,14 +169,6 @@ class OxuAzScraper(BaseScraper):
                 if not month:
                     print(f"[WARNING] Unknown month: {month_str}")
                     return None
-
-                # Parse time: "19:44"
-                time_components = time_part.split(':')
-                hour = 0
-                minute = 0
-                if len(time_components) >= 2:
-                    hour = int(time_components[0])
-                    minute = int(time_components[1])
 
                 return datetime(year, month, day, hour, minute)
 
