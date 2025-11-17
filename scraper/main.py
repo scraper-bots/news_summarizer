@@ -31,6 +31,7 @@ from sources.sonxeber_az import SonxeberAzScraper
 from sources.iqtisadiyyat_az import IqtisadiyyatAzScraper
 from sources.trend_az import TrendAzScraper
 from sources.apa_az import ApaAzScraper
+from sources.qafqazinfo_az import QafqazinfoAzScraper
 from telegram import TelegramReporter
 from summarizer import GeminiSummarizer
 
@@ -499,6 +500,64 @@ async def scrape_apa_az(db: Database, summarizer: GeminiSummarizer, scraping_ses
     }
 
 
+async def scrape_qafqazinfo_az(db: Database, summarizer: GeminiSummarizer, scraping_session_id: int, num_pages: int = 2) -> Dict:
+    """
+    Scrape articles from Qafqazinfo.az (economy section) asynchronously
+
+    Args:
+        db: Database instance
+        summarizer: GeminiSummarizer instance
+        scraping_session_id: ID of the current scraping session
+        num_pages: Number of pages to scrape
+
+    Returns:
+        Dictionary with scraping statistics and new articles
+    """
+    print("\n" + "=" * 60)
+    print("SCRAPING QAFQAZINFO.AZ")
+    print("=" * 60)
+
+    total_saved = 0
+    new_articles = []
+
+    async with QafqazinfoAzScraper() as scraper:
+        articles = await scraper.scrape_all(num_pages=num_pages, batch_size=10)
+
+        total_found = len(articles)
+        total_scraped = total_found
+        total_skipped = 0
+
+        # Save articles to database
+        for article in articles:
+            # Check if article already exists
+            if db.article_exists(article['url']):
+                total_skipped += 1
+                continue
+
+            # Save to database
+            article_id = db.insert_article(article, scraping_session_id)
+            if article_id:
+                total_saved += 1
+                new_articles.append(article)
+
+    print("\n" + "=" * 60)
+    print(f"QAFQAZINFO.AZ SUMMARY")
+    print(f"Total found: {total_found}")
+    print(f"Total scraped: {total_scraped}")
+    print(f"Total saved to DB: {total_saved}")
+    print(f"Total skipped: {total_skipped}")
+    print("=" * 60)
+
+    return {
+        'name': 'Qafqazinfo.az',
+        'total': total_found,
+        'scraped': total_scraped,
+        'saved': total_saved,
+        'skipped': total_skipped,
+        'new_articles': new_articles
+    }
+
+
 async def main():
     """Main async function to run all scrapers"""
     print("\n" + "=" * 60)
@@ -536,7 +595,7 @@ async def main():
         placeholder_summary = {
             'summary': 'Scraping in progress...',
             'articles_count': 0,
-            'sources_count': 8,
+            'sources_count': 9,
             'new_articles_count': 0,
             'scraping_duration_seconds': 0
         }
@@ -586,6 +645,11 @@ async def main():
         apa_stats = await scrape_apa_az(db, summarizer, scraping_session_id, num_pages=2)
         sources_stats.append(apa_stats)
         all_new_articles.extend(apa_stats.get('new_articles', []))
+
+        # Scrape Qafqazinfo.az - 2 pages, all articles
+        qafqazinfo_stats = await scrape_qafqazinfo_az(db, summarizer, scraping_session_id, num_pages=2)
+        sources_stats.append(qafqazinfo_stats)
+        all_new_articles.extend(qafqazinfo_stats.get('new_articles', []))
 
         end_time = datetime.now(timezone.utc)
 
