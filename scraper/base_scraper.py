@@ -60,6 +60,11 @@ class BaseScraper(ABC):
                 if '404' in str(e):
                     # Silently return None for 404s - this is normal pagination behavior
                     return None
+                # Suppress 403 errors for known bot-protected sites
+                if '403' in str(e) and 'oxu.az' in url.lower():
+                    # OXU.AZ uses aggressive bot protection (likely Cloudflare)
+                    # This is expected and not an error we can fix
+                    return None
                 print(f"[ERROR] Client error fetching {url}: {e}")
                 return None
             except Exception as e:
