@@ -56,6 +56,10 @@ class BaseScraper(ABC):
                 print(f"[ERROR] Timeout fetching {url}")
                 return None
             except aiohttp.ClientError as e:
+                # Don't log 404s as errors - they're expected when we run out of pages
+                if '404' in str(e):
+                    # Silently return None for 404s - this is normal pagination behavior
+                    return None
                 print(f"[ERROR] Client error fetching {url}: {e}")
                 return None
             except Exception as e:

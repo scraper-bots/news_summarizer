@@ -81,8 +81,13 @@ class BankerAzScraper(BaseScraper):
             return None
 
         try:
-            # Extract title
+            # Extract title - try multiple selectors
             title_elem = soup.select_one('h1.tdb-title-text')
+            if not title_elem:
+                # Try alternative selectors
+                title_elem = soup.select_one('h1.entry-title')
+            if not title_elem:
+                title_elem = soup.select_one('h1')
             if not title_elem:
                 print(f"[ERROR] Could not find title for {url}")
                 return None
