@@ -104,8 +104,15 @@ class BankerAzScraper(BaseScraper):
                 except Exception as e:
                     print(f"[WARNING] Could not parse date: {date_str}, error: {e}")
 
-            # Extract content
+            # Extract content - try multiple selectors
             content_elem = soup.select_one('.tdb_single_content .tdb-block-inner')
+            if not content_elem:
+                # Try alternative selectors
+                content_elem = soup.select_one('.tdb_single_content')
+            if not content_elem:
+                content_elem = soup.select_one('article .entry-content')
+            if not content_elem:
+                content_elem = soup.select_one('.td-post-content')
             if not content_elem:
                 print(f"[ERROR] Could not find content for {url}")
                 return None
