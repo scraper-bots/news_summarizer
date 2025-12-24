@@ -2,6 +2,11 @@
 
 Async news scraper for 8 major Azerbaijani news sources with AI summarization and Telegram reporting.
 
+## 🔗 Live Links
+
+- **🌐 Web Application**: [https://news-summarizer-omega.vercel.app/](https://news-summarizer-omega.vercel.app/)
+- **📱 Telegram Channel**: [https://t.me/batimess](https://t.me/batimess)
+
 ## 🚀 Features
 
 - **8 News Sources**: Banker.az, Marja.az, Report.az, Fed.az, Sonxeber.az, Iqtisadiyyat.az, Trend.az, APA.az
