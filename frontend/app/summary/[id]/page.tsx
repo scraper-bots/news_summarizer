@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { getSummaryById, getArticlesBySessionId } from '@/lib/db';
-import { formatDate, formatDateTime, formatDuration } from '@/lib/utils';
+import { formatDate, formatDuration } from '@/lib/utils';
 import { notFound } from 'next/navigation';
+import ArticlesGrid from '@/components/ArticlesGrid';
 
 export const dynamic = 'force-dynamic';
 
@@ -94,53 +95,13 @@ export default async function SummaryPage({
           </div>
         )}
 
-        {/* Articles */}
-        {articles.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm p-6 md:p-8 border border-slate-200">
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">
-              Xəbərlər ({articles.length})
-            </h2>
-            <div className="space-y-4">
-              {articles.map((article) => (
-                <div
-                  key={article.id}
-                  className="border-l-4 border-blue-500 bg-slate-50 rounded-r-lg p-4 hover:bg-slate-100 transition-colors"
-                >
-                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2 mb-2">
-                    <h3 className="font-semibold text-slate-900 text-sm md:text-base">
-                      {article.title}
-                    </h3>
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium w-fit">
-                      {article.source}
-                    </span>
-                  </div>
-                  <p className="text-slate-600 text-sm line-clamp-2 mb-3">
-                    {article.content.substring(0, 200)}...
-                  </p>
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                    <span className="flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      {formatDateTime(article.published_date)}
-                    </span>
-                    <a
-                      href={article.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-blue-600 hover:text-blue-700 hover:underline"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                      </svg>
-                      Əsl xəbər
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Articles Grid with Pagination */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            Xəbərlər ({articles.length})
+          </h2>
+          <ArticlesGrid articles={articles} />
+        </div>
       </div>
 
       {/* Footer */}
