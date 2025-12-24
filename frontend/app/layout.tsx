@@ -15,15 +15,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Azərbaycan Bank Sektoru - Gündəlik Xəbərlər",
   description: "Azərbaycan bank və maliyyə sektorundan gündəlik xəbərlər və professional analitik xülasələr",
-  icons: {
-    icon: [
-      { url: '/favicon.ico' },
-      { url: '/icon.png', type: 'image/png', sizes: '192x192' },
-    ],
-    apple: [
-      { url: '/apple-icon.png', type: 'image/png', sizes: '180x180' },
-    ],
-  },
   openGraph: {
     title: "Azərbaycan Bank Sektoru",
     description: "Gündəlik maliyyə və bank xəbərləri",

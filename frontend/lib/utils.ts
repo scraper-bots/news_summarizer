@@ -46,3 +46,23 @@ export function formatDuration(seconds: number | null): string {
 
   return `${minutes}m ${remainingSeconds}s`;
 }
+
+/**
+ * Get placeholder image for article
+ */
+export function getPlaceholderImage(index: number): string {
+  const images = [
+    '/news-placeholder-1.svg',
+    '/news-placeholder-2.svg',
+    '/news-placeholder-3.svg',
+  ];
+  return images[index % images.length];
+}
+
+/**
+ * Truncate text to specified length
+ */
+export function truncateText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+}
