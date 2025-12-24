@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ScrapingSummary } from '@/types';
-import { formatDateVerbose, getPlaceholderImage, truncateText, getShortMonth } from '@/lib/utils';
+import { getPlaceholderImage, truncateText, getShortMonth } from '@/lib/utils';
 import Pagination from './Pagination';
 
 interface SummariesGridProps {
@@ -55,7 +55,7 @@ export default function SummariesGrid({ summaries }: SummariesGridProps) {
               <div className="relative h-48 bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden">
                 <Image
                   src={getPlaceholderImage(startIndex + index)}
-                  alt={formatDateVerbose(summary.scraping_date)}
+                  alt="Gündəlik Bank Xülasəsi"
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -74,7 +74,7 @@ export default function SummariesGrid({ summaries }: SummariesGridProps) {
               <div className="p-5 flex flex-col flex-grow">
                 {/* Title */}
                 <h3 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-blue-600 transition-colors">
-                  {formatDateVerbose(summary.scraping_date)}
+                  Gündəlik Xülasə
                 </h3>
 
                 {/* Stats */}
