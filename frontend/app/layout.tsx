@@ -30,6 +30,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="az">
+      <head>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

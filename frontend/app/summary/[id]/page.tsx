@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getSummaryById, getArticlesBySessionId } from '@/lib/db';
-import { formatDate, formatDuration } from '@/lib/utils';
+import { formatDateVerbose, formatDuration } from '@/lib/utils';
 import { notFound } from 'next/navigation';
 import ArticlesGrid from '@/components/ArticlesGrid';
 
@@ -45,7 +45,7 @@ export default async function SummaryPage({
             </div>
             <div>
               <h1 className="text-2xl md:text-4xl font-bold text-slate-900">
-                {formatDate(summary.scraping_date)}
+                {formatDateVerbose(summary.scraping_date)}
               </h1>
               <p className="text-slate-600 mt-1">Bank Sektoru Xülasəsi</p>
             </div>

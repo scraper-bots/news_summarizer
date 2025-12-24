@@ -1,6 +1,6 @@
-import Link from 'next/link';
 import { getSummaries, getStats } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
+import SummariesGrid from '@/components/SummariesGrid';
 
 export const dynamic = 'force-dynamic';
 
@@ -78,65 +78,10 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* Summaries List */}
-        <div className="space-y-4">
+        {/* Summaries Grid */}
+        <div>
           <h2 className="text-2xl font-bold text-slate-900 mb-6">Gündəlik Xülasələr</h2>
-
-          {summaries.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-slate-200">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Hələ heç bir xülasə yoxdur</h3>
-              <p className="text-slate-500">İlk xülasə yaradıldıqdan sonra burada görünəcək.</p>
-            </div>
-          ) : (
-            summaries.map((summary) => (
-              <Link
-                key={summary.id}
-                href={`/summary/${summary.id}`}
-                className="block group"
-              >
-                <div className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 p-6 border border-slate-200 hover:border-blue-300">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-                    <div className="flex items-center gap-3 mb-2 md:mb-0">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                        {new Date(summary.scraping_date).getDate()}
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                          {formatDate(summary.scraping_date)}
-                        </h3>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
-                            {summary.new_articles_count} yeni xəbər
-                          </span>
-                          <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-medium">
-                            {summary.sources_count} mənbə
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-slate-400 group-hover:text-blue-500 transition-colors">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-
-                  {summary.summary && (
-                    <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
-                      <p className="text-slate-700 line-clamp-3 text-sm md:text-base leading-relaxed whitespace-pre-wrap">
-                        {summary.summary.substring(0, 250)}...
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </Link>
-            ))
-          )}
+          <SummariesGrid summaries={summaries} />
         </div>
       </div>
 

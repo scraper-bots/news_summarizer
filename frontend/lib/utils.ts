@@ -1,7 +1,20 @@
 /**
- * Format date for display in Azerbaijani format
+ * Format date in dd.mm.yyyy format
  */
 export function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+
+  return `${day}.${month}.${year}`;
+}
+
+/**
+ * Format date in verbose Azerbaijani format (e.g., "24 Dekabr 2025")
+ */
+export function formatDateVerbose(dateString: string): string {
   const date = new Date(dateString);
 
   const months = [
@@ -65,4 +78,16 @@ export function getPlaceholderImage(index: number): string {
 export function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength) + '...';
+}
+
+/**
+ * Get short month name in Azerbaijani (3 letters)
+ */
+export function getShortMonth(dateString: string): string {
+  const date = new Date(dateString);
+  const months = [
+    'Yan', 'Fev', 'Mar', 'Apr', 'May', 'İyn',
+    'İyl', 'Avq', 'Sen', 'Okt', 'Noy', 'Dek'
+  ];
+  return months[date.getMonth()];
 }
