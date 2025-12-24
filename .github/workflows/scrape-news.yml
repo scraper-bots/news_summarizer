@@ -1,9 +1,11 @@
 name: Daily News Scraper
 
 on:
-  # Run daily at 09:00 UTC (13:00 Azerbaijan time)
+  # Run 3 times daily at 12:00, 16:00, and 20:00 UTC
   schedule:
-    - cron: '0 9 * * *'
+    - cron: '0 12 * * *'  # 12:00 UTC
+    - cron: '0 16 * * *'  # 16:00 UTC
+    - cron: '0 20 * * *'  # 20:00 UTC
 
   # Allow manual trigger for testing
   workflow_dispatch:
