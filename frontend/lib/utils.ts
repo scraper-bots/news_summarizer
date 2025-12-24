@@ -91,3 +91,22 @@ export function getShortMonth(dateString: string): string {
   ];
   return months[date.getMonth()];
 }
+
+/**
+ * Format time in HH:MM format
+ */
+export function formatTime(dateString: string): string {
+  const date = new Date(dateString);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+/**
+ * Format date and time for display (e.g., "24 Dekabr 2025, 12:00")
+ */
+export function formatDateTimeVerbose(dateString: string): string {
+  const dateVerbose = formatDateVerbose(dateString);
+  const time = formatTime(dateString);
+  return `${dateVerbose}, ${time}`;
+}

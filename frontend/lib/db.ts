@@ -37,7 +37,7 @@ export async function getSummaries(limit: number = 30): Promise<ScrapingSummary[
       created_at,
       updated_at
     FROM news.scraping_summaries
-    ORDER BY scraping_date DESC
+    ORDER BY created_at DESC
     LIMIT $1
   `;
 

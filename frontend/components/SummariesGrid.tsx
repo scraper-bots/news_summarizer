@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ScrapingSummary } from '@/types';
-import { getPlaceholderImage, truncateText, getShortMonth } from '@/lib/utils';
+import { getPlaceholderImage, truncateText, getShortMonth, formatTime } from '@/lib/utils';
 import Pagination from './Pagination';
 
 interface SummariesGridProps {
@@ -60,12 +60,17 @@ export default function SummariesGrid({ summaries }: SummariesGridProps) {
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 {/* Date Badge */}
-                <div className="absolute top-4 left-4 w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex flex-col items-center justify-center text-white shadow-lg">
-                  <span className="text-2xl font-bold leading-none">
-                    {new Date(summary.scraping_date).getDate()}
-                  </span>
-                  <span className="text-xs uppercase mt-1">
-                    {getShortMonth(summary.scraping_date)}
+                <div className="absolute top-4 left-4 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex flex-col items-center justify-center text-white shadow-lg px-3 py-2">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-bold leading-none">
+                      {new Date(summary.created_at).getDate()}
+                    </span>
+                    <span className="text-xs uppercase">
+                      {getShortMonth(summary.created_at)}
+                    </span>
+                  </div>
+                  <span className="text-xs font-medium mt-1 opacity-90">
+                    {formatTime(summary.created_at)}
                   </span>
                 </div>
               </div>

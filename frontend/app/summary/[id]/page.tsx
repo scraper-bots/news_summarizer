@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getSummaryById, getArticlesBySessionId } from '@/lib/db';
-import { formatDateVerbose, formatDuration } from '@/lib/utils';
+import { formatDateTimeVerbose, formatDuration } from '@/lib/utils';
 import { notFound } from 'next/navigation';
 import ArticlesGrid from '@/components/ArticlesGrid';
 
@@ -48,13 +48,13 @@ export default async function SummaryPage({
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div className="flex items-start gap-4">
               <div className="w-20 h-20 md:w-24 md:h-24 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center text-white font-bold text-3xl md:text-4xl flex-shrink-0 border border-white/30 shadow-xl">
-                {new Date(summary.scraping_date).getDate()}
+                {new Date(summary.created_at).getDate()}
               </div>
               <div>
                 <h1 className="text-3xl md:text-5xl font-bold text-white mb-2">
-                  {formatDateVerbose(summary.scraping_date)}
+                  {formatDateTimeVerbose(summary.created_at)}
                 </h1>
-                <p className="text-blue-100 text-lg">📊 Gündəlik Bank Sektoru Analizi</p>
+                <p className="text-blue-100 text-lg">📊 Bank Sektoru Analizi</p>
               </div>
             </div>
 
