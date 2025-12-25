@@ -37,6 +37,13 @@ export async function getSummaries(limit: number = 30): Promise<ScrapingSummary[
       created_at,
       updated_at
     FROM news.scraping_summaries
+    WHERE summary IS NOT NULL
+      AND summary != 'Scraping in progress...'
+      AND summary NOT LIKE '%creation failed%'
+      AND summary NOT LIKE 'No new articles%'
+      AND summary NOT LIKE '%kifayət qədər xəbər%'
+      AND new_articles_count > 0
+      AND LENGTH(summary) > 100
     ORDER BY created_at DESC
     LIMIT $1
   `;
