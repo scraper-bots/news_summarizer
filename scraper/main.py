@@ -742,6 +742,17 @@ async def main():
                     'scraping_duration_seconds': duration
                 }
                 db.update_scraping_summary(scraping_session_id, summary_data)
+            else:
+                # Summarizer failed - mark session as failed
+                print("\n[WARNING] Summary creation failed, marking session...")
+                duration = (end_time - start_time).total_seconds()
+                summary_data = {
+                    'summary': 'AI summary creation failed. Articles collected but not analyzed.',
+                    'articles_count': total_found,
+                    'new_articles_count': total_saved,
+                    'scraping_duration_seconds': duration
+                }
+                db.update_scraping_summary(scraping_session_id, summary_data)
         elif scraping_session_id and not all_new_articles:
             # No new articles, update placeholder with zero counts
             print("\n[INFO] No new articles found, updating session with zero counts...")
