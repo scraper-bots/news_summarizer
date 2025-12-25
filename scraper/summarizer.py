@@ -121,34 +121,34 @@ class GeminiSummarizer:
 
             articles_text = "\n\n".join(articles_list)
 
-            # Filtering prompt
-            filter_prompt = f"""Sən bank sektorunda Business Analyst üçün asistansan. Aşağıdakı xəbərləri analiz et və YALNIZ bank sektoruna aid olanları seç.
+            # Filtering prompt - STRICT banking/finance only
+            filter_prompt = f"""Sən bank sektoru analitikiəsən. YALNIZ bank və maliyyə sektoruna BİRBAŞA aid olan xəbərləri seç.
 
-RELEVANT (UYĞUN) XƏBƏRLƏR:
-- Bank və maliyyə sektoru xəbərləri
-- Makroiqtisadi göstəricilər (inflyasiya, iqtisadi artım, və s.)
-- Tənzimləmə və qanunvericilik dəyişiklikləri
-- Kredit, ipoteka, depozit bazarları
-- Bank kapitalı və maliyyə nəticələri
-- Fintex və rəqəmsal bank xidmətləri
-- Valyuta məzənnəsi və pul siyasəti
-- Beynəlxalq maliyyə təşkilatları (IMF, World Bank, və s.)
-- Biznes mühiti və investisiya iqlimi
+✅ QƏBUL ET (bank/maliyyə xəbərləri):
+- Bankların maliyyə nəticələri, mənfəət/zərər
+- Kredit, depozit, ipoteka məhsulları və faiz dərəcələri
+- Bank kapitalı, likvidlik, ehtiyatlar
+- Mərkəzi Bank qərarları (faiz dərəcəsi, ehtiyat norması)
+- İnflyasiya, manat məzənnəsi, ödəniş balansı
+- Maliyyə bazarları, fond birjası, istiqrazlar
+- Fintex, bank texnologiyaları, kartlar, ödəniş sistemləri
+- Bank tənzimlənməsi, lisenziyalar, qanunlar
+- IMF/Dünya Bankı kreditləri və proqnozları
 
-IRRELEVANT (UYĞUN OLMAYAN) XƏBƏRLƏR:
-- Beynəlxalq siyasət və münaqişələr (bank sektoruna təsiri yoxdursa)
-- İdman xəbərləri
-- Mədəniyyət və əyləncə
-- Texnologiya (fintex deyilsə)
-- Ümumi infrastruktur layihələri (maliyyələşmə aspekti yoxdursa)
+❌ REDDİ ET (bank deyil):
+- Ümumi siyasət, hökumət təyinatları
+- Azad olunmuş ərazilər, dövlət quruculuğu
+- İnfrastruktur layihələri (maliyyə aspekti yoxdursa)
+- Hüquq-mühafizə, məhkəmələr, prokurorluq
+- Beynəlxalq münasibətlər, diplomatiya
+- Müdafiə, təhlükəsizlik, hərbi məsələlər
 
 XƏBƏRLƏR:
 {articles_text}
 
-TAPŞıRıQ: Yuxarıdakı xəbərlərdən YALNIZ bank sektoru üçün relevant olanların nömrələrini ver.
-Cavabı bu formatda ver: 1,3,5,7 (vergüllə ayrılmış nömrələr, heç bir izahat yox)
+QAYDA: Əgər xəbər BANKLAR, KREDİT, DEPOZIT, FAİZ, MƏZƏNNƏ və ya MALİYYƏ haqqında deyilsə - reddet.
 
-RELEVANT XƏBƏRLƏR:"""
+BİRBAŞA bank/maliyyə xəbərlərinin nömrələri (vergüllə): """
 
             response = self.client.models.generate_content(
                 model=self.model_name,
@@ -210,8 +210,14 @@ RELEVANT XƏBƏRLƏR:"""
             # STEP 1: Filter for relevant articles
             relevant_articles = self.filter_relevant_articles(articles)
 
-            if not relevant_articles:
+            # If filtering significantly reduced articles, those filtered out weren't banking-related
+            if not relevant_articles or len(relevant_articles) == 0:
                 return "Bu sessiyada bank sektoruna aid heç bir xəbər tapılmadı."
+
+            # If we have very few articles, be more strict - likely false positives
+            if len(relevant_articles) < 3 and len(articles) > 5:
+                print(f"[WARNING] Only {len(relevant_articles)}/{len(articles)} articles passed filter - likely not banking news")
+                return "Bu sessiyada bank sektoruna aid kifayət qədər xəbər tapılmadı. Xəbərlər əsasən siyasi/inzibati mövzulara aiddir."
 
             # STEP 2: Create banking intelligence report
             self._wait_for_rate_limit()
