@@ -135,7 +135,7 @@ class GeminiSummarizer:
 - Bank tənzimlənməsi, lisenziyalar, qanunlar
 - IMF/Dünya Bankı kreditləri və proqnozları
 
-❌ REDDİ ET (bank deyil):
+❌ REDD ET (bank deyil):
 - Ümumi siyasət, hökumət təyinatları
 - Azad olunmuş ərazilər, dövlət quruculuğu
 - İnfrastruktur layihələri (maliyyə aspekti yoxdursa)
@@ -214,10 +214,9 @@ BİRBAŞA bank/maliyyə xəbərlərinin nömrələri (vergüllə): """
             if not relevant_articles or len(relevant_articles) == 0:
                 return "Bu sessiyada bank sektoruna aid heç bir xəbər tapılmadı."
 
-            # If we have very few articles, be more strict - likely false positives
+            # Log warning if filtering significantly reduced articles, but continue with summary
             if len(relevant_articles) < 3 and len(articles) > 5:
-                print(f"[WARNING] Only {len(relevant_articles)}/{len(articles)} articles passed filter - likely not banking news")
-                return "Bu sessiyada bank sektoruna aid kifayət qədər xəbər tapılmadı. Xəbərlər əsasən siyasi/inzibati mövzulara aiddir."
+                print(f"[WARNING] Only {len(relevant_articles)}/{len(articles)} articles passed filter - continuing with available articles")
 
             # STEP 2: Create banking intelligence report
             self._wait_for_rate_limit()
