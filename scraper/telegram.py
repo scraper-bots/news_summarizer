@@ -4,6 +4,7 @@ Telegram bot for scraping notifications and reporting
 
 import sys
 import os
+import time
 import requests
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
@@ -79,12 +80,25 @@ class TelegramReporter:
                         'disable_web_page_preview': True
                     }
 
-                    response = requests.post(url, json=payload, timeout=10)
-                    response.raise_for_status()
+                    # Retry logic with exponential backoff
+                    max_retries = 3
+                    for attempt in range(max_retries):
+                        try:
+                            response = requests.post(url, json=payload, timeout=30)
+                            response.raise_for_status()
+                            break  # Success, exit retry loop
+                        except (requests.exceptions.Timeout,
+                                requests.exceptions.ConnectionError,
+                                requests.exceptions.RequestException) as retry_error:
+                            if attempt < max_retries - 1:
+                                wait_time = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s
+                                print(f"[WARNING] Telegram send failed (attempt {attempt + 1}/{max_retries}), retrying in {wait_time}s...")
+                                time.sleep(wait_time)
+                            else:
+                                raise  # Re-raise on final attempt
 
                     # Small delay between parts to avoid rate limiting
                     if i < len(messages):
-                        import time
                         time.sleep(0.5)
 
                 success_count += 1
