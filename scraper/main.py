@@ -238,11 +238,12 @@ async def main():
         total_saved = sum(s['saved'] for s in sources_stats) if sources_stats else 0
         total_skipped = sum(s['skipped'] for s in sources_stats) if sources_stats else 0
 
-        # Send Telegram report
+        # Prepare report statistics
         report_stats = {
             'start_time': start_time,
             'end_time': end_time,
             'sources': sources_stats,
+            'sources_count': len(sources_stats),
             'total_found': total_found,
             'total_scraped': total_scraped,
             'total_saved': total_saved,
@@ -251,10 +252,17 @@ async def main():
             'errors': errors
         }
 
-        # Send to appropriate chat based on success
-        # success=True → CHANNEL_CHAT_ID (public channel)
-        # success=False → NOTIFICATION_CHAT (personal chats for errors/testing)
-        telegram.send_scraping_report(report_stats, success=success)
+        # Send dual Telegram reports
+        # 1. Monitoring report → NOTIFICATION_CHAT (detailed system health & performance)
+        #    - Sent regardless of success/failure
+        #    - Includes: metrics, source breakdown, errors, system health
+        telegram.send_monitoring_report(report_stats, success=success)
+
+        # 2. User report → CHANNEL_CHAT_ID (clean banking intelligence)
+        #    - Only sent on successful scraping
+        #    - Includes: only the banking intelligence summary for end users
+        if success:
+            telegram.send_user_report(report_stats)
 
 
 if __name__ == "__main__":

@@ -299,9 +299,9 @@ DATABASE_URL=postgresql://user:password@host:port/dbname
 GEMINI_API_KEY=your_gemini_api_key
 TELEGRAM_BOT_TOKEN=your_bot_token
 
-# Telegram chat IDs (separate channels for success/failure)
-CHANNEL_CHAT_ID=-1003425585410          # Public channel for successful scraping results
-NOTIFICATION_CHAT=6192509415,-4879313859 # Personal chats for errors, tests, and notifications (comma-separated)
+# Telegram chat IDs (dual messaging system)
+CHANNEL_CHAT_ID=-1003425585410           # Public channel - clean banking news for end users
+NOTIFICATION_CHAT=6192509415,-4879313859 # Monitoring chats - detailed performance metrics, system health (comma-separated)
 
 # Optional: Gemini API retry configuration for handling 503/overload errors
 GEMINI_MAX_RETRIES=3                     # Number of retry attempts (default: 3)
@@ -547,33 +547,65 @@ Each scraping session generates:
 - Risk and opportunity identification
 - Action items and recommendations
 
-### 3. Telegram Report
+### 3. Telegram Reports
 
-The system uses two separate Telegram channels:
+The system uses **dual Telegram messaging** with separate purposes:
 
-**Public Channel (CHANNEL_CHAT_ID)** - Receives successful scraping results:
+#### **NOTIFICATION_CHAT (System Monitoring)**
+**Purpose:** Track system health, performance, and detailed metrics
+**Audience:** Administrators/developers
+**Frequency:** Every scraping run (success or failure)
+
 ```
-📊 Azərbaycan Bank Sektoru
-24.12.2025
-
-🔥 ƏSAS TRENDLƏR
-[Banking intelligence report...]
-```
-
-**Notification Chats (NOTIFICATION_CHAT)** - Receives errors and test messages:
-```
-⚠️ Scraping Incomplete
+✅ Scraping Successful
 ━━━━━━━━━━━━━━━━━━━━
 
-📅 24.12.2025
+📅 11.01.2026 12:30
 ⏱ Duration: 1m 23s
 
-❌ AI summary creation failed
+📊 PERFORMANCE METRICS
+• Total articles found: 367
+• Unique articles saved: 88
+• Duplicates skipped: 279
+• Sources scraped: 10
+
+📰 SOURCE BREAKDOWN
+• Banker.az: 15 new / 45 total
+• Marja.az: 12 new / 38 total
+• Report.az: 8 new / 25 total
+...
+
+🤖 AI PROCESSING
+• Summary generated: ✅ (1,245 chars)
+• Banking news filtered: ✅
+
+💚 SYSTEM HEALTH
+• Status: Healthy ✅
+• Quality: 88 unique articles
 ```
 
-This ensures that:
-- Users in the public channel only see quality banking intelligence reports
-- Errors and test messages go to personal chats for debugging
+#### **CHANNEL_CHAT_ID (End Users)**
+**Purpose:** Deliver clean banking intelligence to subscribers
+**Audience:** Public channel users
+**Frequency:** Only on successful scraping
+
+```
+📊 Azərbaycan Bank Sektoru
+📅 11.01.2026
+
+🔥 ƏSAS TRENDLƏR
+Bank sektoru üzrə yeni tənzimlənmə dəyişiklikləri...
+
+💰 MALİYYƏ VƏ MAKRO
+• İnflyasiya: 7.1% (ötən ay 7.3%)
+• Bank mənfəəti: 15% artım
+...
+```
+
+**Key Benefits:**
+- **For users:** Clean, professional banking news without technical noise
+- **For admins:** Detailed monitoring of system performance and health
+- **Separation:** Users never see errors, tests, or debugging information
 
 ### 4. Frontend Display
 - Homepage with paginated summary cards

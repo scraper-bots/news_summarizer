@@ -183,78 +183,149 @@ class TelegramReporter:
             hours = seconds / 3600
             return f"{hours:.1f}h"
 
-    def send_scraping_report(self, stats: Dict, success: bool = True) -> bool:
+    def send_monitoring_report(self, stats: Dict, success: bool) -> bool:
         """
-        Send professional banking intelligence report for public channel (success)
-        OR error notification to personal chats (failure)
+        Send detailed monitoring/performance report to NOTIFICATION_CHAT
+
+        This is for system monitoring - tracks health, performance, and detailed stats.
+        Sent regardless of success/failure.
 
         Args:
             stats: Dictionary containing statistics
                 - start_time: datetime
                 - end_time: datetime
                 - sources: List of source stats
-                - total_saved: int (saved to database)
+                - total_found: int
+                - total_saved: int
                 - session_summary: str (banking intelligence)
                 - errors: List of errors (optional)
-            success: If True, sends to CHANNEL_CHAT_ID; if False, sends to NOTIFICATION_CHAT
+            success: Whether scraping completed successfully
 
         Returns:
             True if sent successfully
         """
-        if not self.enabled:
+        if not self.enabled or not self.notification_chat_ids:
             return False
 
         try:
-            # Professional public channel format
-            timestamp = stats['end_time'].strftime("%d.%m.%Y")
+            timestamp = stats['end_time'].strftime("%d.%m.%Y %H:%M")
+            duration = (stats['end_time'] - stats['start_time']).total_seconds()
 
+            # Header with status
             if success:
-                # Send successful scraping to public channel
-                # Check if we have banking intelligence
-                if not stats.get('session_summary'):
-                    # No intelligence to report
-                    return False
-
-                message_parts = [
-                    f"📊 <b>Azərbaycan Bank Sektoru</b>",
-                    f"📅 {timestamp}",
-                    "",
-                    stats['session_summary']
-                ]
-
-                message = "\n".join(message_parts)
-
-                # Send to channel (public)
-                return self.send_message(message, chat_ids=self.channel_chat_ids)
-
+                status_emoji = "✅"
+                status_text = "Scraping Successful"
             else:
-                # Send failure notification to personal chats
-                duration = (stats['end_time'] - stats['start_time']).total_seconds()
+                status_emoji = "⚠️"
+                status_text = "Scraping Failed"
 
-                message_parts = [
-                    "⚠️ <b>Scraping Incomplete</b>",
-                    "━━━━━━━━━━━━━━━━━━━━",
-                    "",
-                    f"📅 {timestamp}",
-                    f"⏱ Duration: {self.format_duration(duration)}",
-                    ""
-                ]
+            message_parts = [
+                f"{status_emoji} <b>{status_text}</b>",
+                "━━━━━━━━━━━━━━━━━━━━",
+                "",
+                f"📅 {timestamp}",
+                f"⏱ Duration: {self.format_duration(duration)}",
+                ""
+            ]
 
-                # Add error details if available
-                if stats.get('errors'):
-                    message_parts.append("<b>Errors:</b>")
-                    for error in stats['errors'][:5]:  # Limit to first 5 errors
-                        message_parts.append(f"❌ {error}")
-                else:
-                    message_parts.append("❌ Scraping failed or incomplete")
+            # Performance metrics
+            message_parts.append("<b>📊 PERFORMANCE METRICS</b>")
+            message_parts.append(f"• Total articles found: {stats.get('total_found', 0)}")
+            message_parts.append(f"• Unique articles saved: {stats.get('total_saved', 0)}")
+            message_parts.append(f"• Duplicates skipped: {stats.get('total_skipped', 0)}")
+            message_parts.append(f"• Sources scraped: {stats.get('sources_count', 0) if success else len(stats.get('sources', []))}")
+            message_parts.append("")
 
-                message = "\n".join(message_parts)
+            # Per-source breakdown
+            if stats.get('sources'):
+                message_parts.append("<b>📰 SOURCE BREAKDOWN</b>")
+                for source_stat in stats['sources'][:10]:  # Limit to 10 sources
+                    source_name = source_stat['name']
+                    total = source_stat.get('total', 0)
+                    saved = source_stat.get('saved', 0)
+                    skipped = source_stat.get('skipped', 0)
 
-                # Send to notification chats (personal)
-                return self.send_message(message, chat_ids=self.notification_chat_ids)
+                    if total > 0:
+                        message_parts.append(f"• {source_name}: {saved} new / {total} total")
+                message_parts.append("")
+
+            # AI processing info (if successful)
+            if success and stats.get('session_summary'):
+                summary_length = len(stats['session_summary'])
+                message_parts.append("<b>🤖 AI PROCESSING</b>")
+                message_parts.append(f"• Summary generated: ✅ ({summary_length} chars)")
+                message_parts.append(f"• Banking news filtered: ✅")
+                message_parts.append("")
+
+            # Error details (if any)
+            if stats.get('errors'):
+                message_parts.append("<b>❌ ERRORS</b>")
+                for error in stats['errors'][:5]:  # Limit to first 5 errors
+                    message_parts.append(f"• {error}")
+                message_parts.append("")
+
+            # System health indicator
+            message_parts.append("<b>💚 SYSTEM HEALTH</b>")
+            if success and stats.get('total_saved', 0) > 0:
+                message_parts.append("• Status: Healthy ✅")
+                message_parts.append(f"• Quality: {stats.get('total_saved', 0)} unique articles")
+            elif not success:
+                message_parts.append("• Status: Failed ⚠️")
+                message_parts.append("• Action: Check logs")
+            else:
+                message_parts.append("• Status: No new content ⚠️")
+                message_parts.append("• Action: Normal (no new articles)")
+
+            message = "\n".join(message_parts)
+
+            # Send to notification chats (monitoring)
+            return self.send_message(message, chat_ids=self.notification_chat_ids)
 
         except Exception as e:
-            print(f"[ERROR] Failed to build scraping report: {e}")
+            print(f"[ERROR] Failed to build monitoring report: {e}")
+            return False
+
+    def send_user_report(self, stats: Dict) -> bool:
+        """
+        Send clean banking intelligence report to CHANNEL_CHAT_ID
+
+        This is for end users - only clean news summary, no technical details.
+        Only sent on successful scraping with banking intelligence.
+
+        Args:
+            stats: Dictionary containing statistics
+                - end_time: datetime
+                - session_summary: str (banking intelligence)
+
+        Returns:
+            True if sent successfully
+        """
+        if not self.enabled or not self.channel_chat_ids:
+            return False
+
+        try:
+            # Check if we have banking intelligence
+            if not stats.get('session_summary'):
+                print("[INFO] No banking intelligence to send to users")
+                return False
+
+            timestamp = stats['end_time'].strftime("%d.%m.%Y")
+
+            # Clean user-facing format - ONLY the banking intelligence
+            message_parts = [
+                f"📊 <b>Azərbaycan Bank Sektoru</b>",
+                f"📅 {timestamp}",
+                "",
+                stats['session_summary']
+            ]
+
+            message = "\n".join(message_parts)
+
+            # Send to channel (end users)
+            return self.send_message(message, chat_ids=self.channel_chat_ids)
+
+        except Exception as e:
+            print(f"[ERROR] Failed to build user report: {e}")
             return False
 
     def send_error_alert(self, error_message: str) -> bool:
