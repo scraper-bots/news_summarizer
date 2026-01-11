@@ -9,6 +9,10 @@ import asyncio
 from datetime import datetime, timezone
 from typing import Dict, List
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+load_dotenv()
+
 # Fix encoding for Azerbaijani characters on Windows
 if sys.platform == 'win32' and hasattr(sys.stdout, 'buffer'):
     import io

@@ -299,6 +299,11 @@ DATABASE_URL=postgresql://user:password@host:port/dbname
 GEMINI_API_KEY=your_gemini_api_key
 TELEGRAM_BOT_TOKEN=your_bot_token
 
+# Test mode - IMPORTANT: Protects public channel during testing
+# TEST_MODE=true  → All messages go ONLY to NOTIFICATION_CHAT (safe testing)
+# TEST_MODE=false → Normal operation (monitoring → NOTIFICATION_CHAT, news → CHANNEL_CHAT_ID)
+TEST_MODE=true
+
 # Telegram chat IDs (dual messaging system)
 CHANNEL_CHAT_ID=-1003425585410           # Public channel - clean banking news for end users
 NOTIFICATION_CHAT=6192509415,-4879313859 # Monitoring chats - detailed performance metrics, system health (comma-separated)
@@ -606,6 +611,43 @@ Bank sektoru üzrə yeni tənzimlənmə dəyişiklikləri...
 - **For users:** Clean, professional banking news without technical noise
 - **For admins:** Detailed monitoring of system performance and health
 - **Separation:** Users never see errors, tests, or debugging information
+
+### Test Mode (Safe Testing)
+
+**Purpose:** Prevent accidental spam to public channel users during testing
+
+When `TEST_MODE=true`:
+```
+🧪 [TEST MODE] User Report Preview
+━━━━━━━━━━━━━━━━━━━━
+
+📊 Azərbaycan Bank Sektoru
+📅 11.01.2026
+
+🔥 ƏSAS TRENDLƏR
+[Banking intelligence...]
+
+━━━━━━━━━━━━━━━━━━━━
+ℹ️ This is a TEST. In production, this would go to the public channel.
+```
+
+**Routing Table:**
+
+| Mode | Monitoring Reports | User Reports (News) | Public Channel |
+|------|-------------------|---------------------|----------------|
+| `TEST_MODE=true` | → NOTIFICATION_CHAT | → NOTIFICATION_CHAT (with [TEST MODE] label) | ❌ No messages |
+| `TEST_MODE=false` | → NOTIFICATION_CHAT | → CHANNEL_CHAT_ID | ✅ Receives news |
+
+**Usage:**
+```bash
+# Development/Testing
+TEST_MODE=true python scraper/main.py
+
+# Production
+TEST_MODE=false python scraper/main.py
+```
+
+**Important:** Always set `TEST_MODE=false` in GitHub Actions secrets for production runs!
 
 ### 4. Frontend Display
 - Homepage with paginated summary cards

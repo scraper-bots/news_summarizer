@@ -35,6 +35,9 @@ jobs:
           CHANNEL_CHAT_ID: ${{ secrets.CHANNEL_CHAT_ID }}
           NOTIFICATION_CHAT: ${{ secrets.NOTIFICATION_CHAT }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # Test mode - MUST be false for production to send to public channel
+          TEST_MODE: ${{ secrets.TEST_MODE || 'false' }}
+          # Optional retry configuration
           GEMINI_MAX_RETRIES: ${{ secrets.GEMINI_MAX_RETRIES }}
           GEMINI_INITIAL_RETRY_DELAY: ${{ secrets.GEMINI_INITIAL_RETRY_DELAY }}
           GEMINI_MAX_RETRY_DELAY: ${{ secrets.GEMINI_MAX_RETRY_DELAY }}

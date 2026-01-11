@@ -32,6 +32,10 @@ class TelegramReporter:
     def __init__(self):
         self.bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
 
+        # Test mode - routes all messages to NOTIFICATION_CHAT for safe testing
+        test_mode_str = os.getenv('TEST_MODE', 'false').lower()
+        self.test_mode = test_mode_str in ('true', '1', 'yes', 'on')
+
         # Channel chat ID for successful scraping (public channel with users)
         channel_id_str = os.getenv('CHANNEL_CHAT_ID', '')
         self.channel_chat_ids = [
@@ -53,10 +57,14 @@ class TelegramReporter:
         if not self.enabled:
             print("[INFO] Telegram reporting disabled (missing credentials)")
         else:
-            if self.channel_chat_ids:
-                print(f"[INFO] Telegram channel enabled ({len(self.channel_chat_ids)} channel(s))")
-            if self.notification_chat_ids:
-                print(f"[INFO] Telegram notifications enabled ({len(self.notification_chat_ids)} chat(s))")
+            if self.test_mode:
+                print(f"[WARNING] TEST MODE ENABLED - All messages will go to NOTIFICATION_CHAT only")
+                print(f"[INFO] Test monitoring chats: {len(self.notification_chat_ids)} chat(s)")
+            else:
+                if self.channel_chat_ids:
+                    print(f"[INFO] Telegram channel enabled ({len(self.channel_chat_ids)} channel(s))")
+                if self.notification_chat_ids:
+                    print(f"[INFO] Telegram notifications enabled ({len(self.notification_chat_ids)} chat(s))")
 
     def send_message(self, message: str, chat_ids: Optional[List[str]] = None) -> bool:
         """
@@ -292,6 +300,9 @@ class TelegramReporter:
         This is for end users - only clean news summary, no technical details.
         Only sent on successful scraping with banking intelligence.
 
+        TEST MODE: If TEST_MODE=true, sends to NOTIFICATION_CHAT instead of CHANNEL_CHAT_ID
+        This allows safe testing without spamming the public channel.
+
         Args:
             stats: Dictionary containing statistics
                 - end_time: datetime
@@ -300,7 +311,13 @@ class TelegramReporter:
         Returns:
             True if sent successfully
         """
-        if not self.enabled or not self.channel_chat_ids:
+        if not self.enabled:
+            return False
+
+        # In test mode, need notification chats; in production, need channel chats
+        if self.test_mode and not self.notification_chat_ids:
+            return False
+        if not self.test_mode and not self.channel_chat_ids:
             return False
 
         try:
@@ -311,18 +328,38 @@ class TelegramReporter:
 
             timestamp = stats['end_time'].strftime("%d.%m.%Y")
 
-            # Clean user-facing format - ONLY the banking intelligence
-            message_parts = [
-                f"📊 <b>Azərbaycan Bank Sektoru</b>",
-                f"📅 {timestamp}",
-                "",
-                stats['session_summary']
-            ]
+            # Determine destination
+            if self.test_mode:
+                # TEST MODE: Send to notification chats with clear indicator
+                message_parts = [
+                    "🧪 <b>[TEST MODE] User Report Preview</b>",
+                    "━━━━━━━━━━━━━━━━━━━━",
+                    "",
+                    f"📊 <b>Azərbaycan Bank Sektoru</b>",
+                    f"📅 {timestamp}",
+                    "",
+                    stats['session_summary'],
+                    "",
+                    "━━━━━━━━━━━━━━━━━━━━",
+                    "ℹ️ <i>This is a TEST. In production, this would go to the public channel.</i>"
+                ]
+                destination = self.notification_chat_ids
+                print("[INFO] TEST MODE: Sending user report to NOTIFICATION_CHAT")
+            else:
+                # PRODUCTION: Clean user-facing format - ONLY the banking intelligence
+                message_parts = [
+                    f"📊 <b>Azərbaycan Bank Sektoru</b>",
+                    f"📅 {timestamp}",
+                    "",
+                    stats['session_summary']
+                ]
+                destination = self.channel_chat_ids
+                print(f"[INFO] PRODUCTION: Sending user report to CHANNEL_CHAT_ID")
 
             message = "\n".join(message_parts)
 
-            # Send to channel (end users)
-            return self.send_message(message, chat_ids=self.channel_chat_ids)
+            # Send to appropriate destination
+            return self.send_message(message, chat_ids=destination)
 
         except Exception as e:
             print(f"[ERROR] Failed to build user report: {e}")
